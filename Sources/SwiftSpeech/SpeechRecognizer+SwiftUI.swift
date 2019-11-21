@@ -8,11 +8,11 @@
 import SwiftUI
 import Speech
 
-struct IsSpeechRecognitionAvailableKey: EnvironmentKey {
-    static let defaultValue: Bool = false
+public struct IsSpeechRecognitionAvailableKey: EnvironmentKey {
+    public static let defaultValue: Bool = false
 }
 
-extension EnvironmentValues {
+public extension EnvironmentValues {
     var isSpeechRecognitionAvailable: Bool {
         get {
             return self[IsSpeechRecognitionAvailableKey.self]
@@ -23,11 +23,11 @@ extension EnvironmentValues {
     }
 }
 
-struct AutomaticEnvironmentForSpeechRecognitionModifier : ViewModifier {
+public struct AutomaticEnvironmentForSpeechRecognitionModifier : ViewModifier {
     
-    @State var isSpeechRecognitionAvailable: Bool = false
+    @State private var isSpeechRecognitionAvailable: Bool = false
     
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         content
             .environment(\.isSpeechRecognitionAvailable, isSpeechRecognitionAvailable)
             .onAppear(perform: requestSpeechRecognitionAuthorization)
