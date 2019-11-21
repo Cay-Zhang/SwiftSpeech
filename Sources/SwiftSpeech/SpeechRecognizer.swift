@@ -64,7 +64,7 @@ public class SpeechRecognizer {
             .eraseToAnyPublisher()
     }
     
-    func startRecording() throws {
+    public func startRecording() throws {
         
         // Cancel the previous task if it's running.
         recognitionTask?.cancel()
@@ -116,7 +116,7 @@ public class SpeechRecognizer {
         
     }
     
-    func stopRecording() {
+    public func stopRecording() {
         
         // Call this method explicitly to let the speech recognizer know that no more audio input is coming.
         self.recognitionRequest?.endAudio()
