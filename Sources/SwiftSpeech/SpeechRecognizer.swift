@@ -11,9 +11,9 @@ import Combine
 
 public class SpeechRecognizer {
     
-    static var localeIdentifiersForSpeechRecognition: [String] = [Locale.current.identifier, "zh_Hans_CN"]
+    public static var localeIdentifiersForSpeechRecognition: [String] = [Locale.current.identifier, "zh_Hans_CN"]
     
-    static var localesForSpeechRecognition: [Locale] {
+    public static var localesForSpeechRecognition: [Locale] {
         localeIdentifiersForSpeechRecognition.map { identifier in
             Locale(identifier: identifier)
         }
