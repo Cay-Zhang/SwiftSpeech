@@ -134,6 +134,14 @@ public class SpeechRecognizer {
         self.audioEngine.inputNode.removeTap(onBus: 0)
     }
     
+    /// Call this method to immediately stop recording AND the recognition task (i.e. stop recognizing & receiving results).
+    /// This method will call `stopRecording()` first and then send a completion (`.finished`) event to the publishers. Finally, it will cancel the recognition task and dispose of the SpeechRecognizer instance.
+    public func cancel() {
+        stopRecording()
+        resultSubject.send(completion: .finished)
+        recognitionTask?.cancel()
+        SpeechRecognizer.remove(id: self.id)
+    }
     
     // MARK: - Init
     fileprivate convenience init(id: UUID = UUID(), locale: Locale = .current) {
@@ -170,7 +178,6 @@ public class SpeechRecognizer {
     
     deinit {
         print("Speech Recognizer: Deinit")
-        self.recognitionTask?.cancel()
         self.recognitionTask = nil
         self.recognitionRequest = nil
     }
