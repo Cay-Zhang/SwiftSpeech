@@ -95,11 +95,13 @@ public class SpeechRecognizer {
                 self.resultSubject.send(.success(result))
                 if result.isFinal {
                     self.resultSubject.send(completion: .finished)
+                    SpeechRecognizer.remove(id: self.id)
                 }
             } else if let error = error {
                 self.stopRecording()
                 self.resultSubject.send(.failure(error))
                 self.resultSubject.send(completion: .finished)
+                SpeechRecognizer.remove(id: self.id)
             } else {
                 fatalError("No result and no error")
             }
