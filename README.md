@@ -16,7 +16,7 @@ https://github.com/Cay-Zhang/SwiftSpeech.git
 `let speechRecognizer = SpeechRecognizer.new(id: id, locale: locale)`
 This adds a SpeechRecognizer instance to the shared instance pool that's managed by the framework.
 ⚠️ Warning: You should **never keep** a strong reference to a SpeechRecognizer instance. Instead, use its `id` property to keep track of it.
-### Start Recording
+#### Start Recording
 `try speechRecognizer.startRecording()`
 This method will setup the audio stuff automatically for you and start recording the user's voice. You can now start receiving the recoginition results by subsribing to one of the publishers the recognizer exposes.
 #### Subscribing
