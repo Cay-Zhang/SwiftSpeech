@@ -11,18 +11,11 @@ import Combine
 
 public class SpeechRecognizer {
     
-    public static var localeIdentifiersForSpeechRecognition: [String] = [Locale.current.identifier, "zh_Hans_CN"]
+    static var instances = [SpeechRecognizer]()
     
-    public static var localesForSpeechRecognition: [Locale] {
-        localeIdentifiersForSpeechRecognition.map { identifier in
-            Locale(identifier: identifier)
-        }
-    }
+    public typealias ID = UUID
     
-    public static let shared = SpeechRecognizer()
-    public static var instances = [SpeechRecognizer]()
-    
-    public var id: UUID
+    public var id: SpeechRecognizer.ID
     
     public var cancelBag = Set<AnyCancellable>()
     
@@ -145,40 +138,40 @@ public class SpeechRecognizer {
     }
     
     // MARK: - Init
-    fileprivate convenience init(id: UUID = UUID(), locale: Locale = .current) {
+    fileprivate convenience init(id: ID = ID(), locale: Locale = .current) {
         let speechRecognizer: SFSpeechRecognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
         self.init(id: id, speechRecognizer: speechRecognizer)
     }
     
-    fileprivate init(id: UUID = UUID(), speechRecognizer: SFSpeechRecognizer) {
+    fileprivate init(id: ID = ID(), speechRecognizer: SFSpeechRecognizer) {
         self.speechRecognizer = speechRecognizer
         self.speechRecognizer.defaultTaskHint = .search
         self.id = id
     }
     
-    public static func new(id: UUID = UUID(), locale: Locale = .current) -> SpeechRecognizer {
+    public static func new(id: ID = ID(), locale: Locale = .current) -> SpeechRecognizer {
         let recognizer = SpeechRecognizer(id: id, locale: locale)
         instances.append(recognizer)
         return recognizer
     }
     
-    public static func recognizer(withID id: UUID?) -> SpeechRecognizer? {
+    public static func recognizer(withID id: ID?) -> SpeechRecognizer? {
         return instances.first { $0.id == id }
     }
     
     @discardableResult
-    public static func remove(id: UUID?) -> SpeechRecognizer? {
+    public static func remove(id: ID?) -> SpeechRecognizer? {
         if let index = instances.firstIndex(where: { $0.id == id }) {
-            print("Removing speech recognizer: index \(index)")
+//            print("Removing speech recognizer: index \(index)")
             return instances.remove(at: index)
         } else {
-            print("Removing speech recognizer: no such id found")
+//            print("Removing speech recognizer: no such id found")
             return nil
         }
     }
     
     deinit {
-        print("Speech Recognizer: Deinit")
+//        print("Speech Recognizer: Deinit")
         self.recognitionTask = nil
         self.recognitionRequest = nil
     }

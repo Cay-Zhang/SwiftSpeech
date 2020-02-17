@@ -11,6 +11,7 @@ let package = Package(
         .library(
             name: "SwiftSpeech",
             targets: ["SwiftSpeech"]),
+//        .executable(name: "SwiftSpeechExample", targets: ["SwiftSpeechExample"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
