@@ -9,15 +9,47 @@ import SwiftUI
 import Speech
 import Combine
 
+extension SwiftSpeech {
+    @dynamicMemberLookup
+    public struct Session : Identifiable {
+        public let id: UUID
+        
+        public subscript<T>(dynamicMember keyPath: KeyPath<SpeechRecognizer, T>) -> T? {
+            return SpeechRecognizer.recognizer(withID: id)?[keyPath: keyPath]
+        }
+        
+        public init(id: UUID = UUID(), locale: Locale = .current) {
+            self.id = id
+            _ = SpeechRecognizer.new(id: id, locale: locale)
+        }
+        
+        public func startRecording() throws {
+            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
+            try recognizer.startRecording()
+        }
+        
+        public func stopRecording() {
+            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
+            recognizer.stopRecording()
+        }
+        
+        public func cancel() {
+            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
+            recognizer.cancel()
+        }
+        
+    }
+}
+
+
+
 public class SpeechRecognizer {
     
     static var instances = [SpeechRecognizer]()
     
     public typealias ID = UUID
     
-    public var id: SpeechRecognizer.ID
-    
-    public var cancelBag = Set<AnyCancellable>()
+    private var id: SpeechRecognizer.ID
     
     private let speechRecognizer: SFSpeechRecognizer
     

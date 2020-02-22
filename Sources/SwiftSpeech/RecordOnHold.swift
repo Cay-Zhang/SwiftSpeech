@@ -16,12 +16,12 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         
         var locale: Locale = .autoupdatingCurrent
         var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
-        var recordingDidStart: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)?
-        var recordingDidStop: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)?
-        var recordingDidCancel: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)?
+        var recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?
+        var recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)?
+        var recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)?
         
         @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
-        @State var recordingSpeechRecognizerID: SpeechRecognizer.ID? = nil
+        @State var recordingSession: SwiftSpeech.Session? = nil
         @State var isRecording: Bool = false
         
         
@@ -53,35 +53,35 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         
         fileprivate func startRecording() {
             let id = SpeechRecognizer.ID()
-            
+            let session = SwiftSpeech.Session(id: id, locale: self.locale)
             // View update
             self.isRecording = true
-            self.recordingSpeechRecognizerID = id
-            
-            let speechRecognizer = SpeechRecognizer.new(id: id, locale: self.locale)
-            try! speechRecognizer.startRecording()
-            self.recordingDidStart?(id)
+            self.recordingSession = session
+            try! session.startRecording()
+            self.recordingDidStart?(session)
         }
         
         fileprivate func cancelRecording() {
-            SpeechRecognizer.recognizer(withID: recordingSpeechRecognizerID)?.cancel()
-            self.recordingDidCancel?(recordingSpeechRecognizerID)
+            guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
+            session.cancel()
+            self.recordingDidCancel?(session)
             self.isRecording = false
-            self.recordingSpeechRecognizerID = nil
+            self.recordingSession = nil
         }
         
         fileprivate func endRecording() {
-            SpeechRecognizer.recognizer(withID: recordingSpeechRecognizerID)?.stopRecording()
-            self.recordingDidStop?(recordingSpeechRecognizerID)
+            guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
+            recordingSession?.stopRecording()
+            self.recordingDidStop?(session)
             self.isRecording = false
-            self.recordingSpeechRecognizerID = nil
+            self.recordingSession = nil
         }
         
     }
     
-    struct SpeechSubject<S: Subject> : ViewModifier where S.Output == SpeechRecognizer.ID?, S.Failure == Never {
+    struct SessionSubject<S: Subject> : ViewModifier where S.Output == SwiftSpeech.Session?, S.Failure == Never {
         
-        @State var speechSubject: S
+        @State var sessionSubject: S
         var locale: Locale = .autoupdatingCurrent
         var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
         
@@ -95,13 +95,13 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
             )
         }
         
-        private func recordingDidStart(_ speechRecognizerID: SpeechRecognizer.ID?) -> Void {
-            self.speechSubject.send(speechRecognizerID)
+        private func recordingDidStart(_ session: SwiftSpeech.Session) -> Void {
+            self.sessionSubject.send(session)
         }
         
-        private func recordingDidStop(_ speechRecognizerID: SpeechRecognizer.ID?) -> Void { }
+        private func recordingDidStop(_ session: SwiftSpeech.Session) -> Void { }
         
-        private func recordingDidCancel(_ speechRecognizerID: SpeechRecognizer.ID?) -> Void { }
+        private func recordingDidCancel(_ session: SwiftSpeech.Session) -> Void { }
         
     }
     
@@ -111,17 +111,17 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         var locale: Locale = .autoupdatingCurrent
         var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
         
-        @State private var speechSubject = CurrentValueSubject<SpeechRecognizer.ID?, Never>(nil)
+        @State private var sessionSubject = CurrentValueSubject<SwiftSpeech.Session?, Never>(nil)
         
         var publisher: AnyPublisher<String, Never> {
-            speechSubject
-                .mapResolved(\.stringPublisher)
+            sessionSubject
+                .compactMap { $0?.stringPublisher }
                 .switchToLatest()
                 .eraseToAnyPublisher()
         }
         
         public func body(content: Content) -> some View {
-            ModifiedContent(content: content, modifier: SpeechSubject(speechSubject: speechSubject, locale: locale, animation: animation))
+            ModifiedContent(content: content, modifier: SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
                 .onReceive(self.publisher) { string in
                     self.recognizedText = string
                 }

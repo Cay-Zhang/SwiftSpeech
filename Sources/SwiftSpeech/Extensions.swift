@@ -14,15 +14,15 @@ public extension View {
         self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding(recognizedText: recognizedText, locale: locale, animation: animation))
     }
     
-    func swiftSpeechRecordOnHold<S: Subject>(speechSubject: S, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.SpeechSubject<S>>
-    where S.Output == SpeechRecognizer.ID?, S.Failure == Never {
-        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.SpeechSubject(speechSubject: speechSubject, locale: locale, animation: animation))
+    func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject<S>>
+    where S.Output == SwiftSpeech.Session?, S.Failure == Never {
+        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
     }
     
     func swiftSpeechRecordOnHold(
-        recordingDidStart: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)?,
-        recordingDidStop: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)? = nil,
-        recordingDidCancel: ((_ speechRecognizerID: SpeechRecognizer.ID?) -> Void)? = nil,
+        recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?,
+        recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
+        recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
         locale: Locale = .autoupdatingCurrent,
         animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> some View {
         
