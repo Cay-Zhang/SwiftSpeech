@@ -1,11 +1,24 @@
 # SwiftSpeech
 
-**Recognize your user's voice elegantly without having to figure out authrization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
+<p>
+<a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
+<a href="https://developer.apple.com/ios"><img src="https://img.shields.io/badge/iOS-13%2B-blue"></a>
+<a href="https://github.com/apple/swift-package-manager"><img src="https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat"></a>
+<a href="https://codebeat.co/projects/github-com-cay-zhang-swiftspeech-master"><img alt="codebeat badge" src="https://codebeat.co/badges/7151eef2-438b-4428-99cd-776961dcf8ab" /></a>
+<a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
+</p>
+
+**Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
 
 SwiftSpeech is a wrapper framework for the Speech / SFSpeechRecognizer APIs for iOS and macOS with built-in SwiftUI, Combine publisher, and multi-language support.
 
+- [Installation](#installation)
+- [Usage](#usage)
+- [SwiftUI Support](#swiftui)
+- [License](#license)
+
 ## Installation
-SwiftSpeech is availblae through Swift Package Manager. To use it, add a package dependency using URL:
+SwiftSpeech is available through Swift Package Manager. To use it, add a package dependency using URL:
 ```
 https://github.com/Cay-Zhang/SwiftSpeech.git
 ```
@@ -23,11 +36,11 @@ This adds a SpeechRecognizer instance to the shared instance pool that's managed
 ```swift
 try speechRecognizer.startRecording()
 ```
-This method will setup the audio stuff automatically for you and start recording the user's voice. You can now start receiving the recoginition results by subsribing to one of the publishers the recognizer exposes.
+This method will set up the audio stuff automatically for you and start recording the user's voice. You can now start receiving the recognition results by subscribing to one of the publishers the recognizer exposes.
 #### Subscribing
 Currently, a SpeechRecognizer instance has two publishers (you only need to subscribe to one of them): `stringPublisher` and `resultPublisher`.
-`stringPublisher` directly emits the speech text recognized (By default, it will emit partial results, which means **you may receive multiple events**). You will receive a `.finished` completion event whenever the recognizer finshes processing the user's voice (i.e. `sfSpeechRecognitionResult.isFinal == true`), or you explicity called the `cancel()` method on the recognizer. Afterward, the recognizer instance will be immediately disposed of.
-You can subsribe to `stringPublisher` in the following way:
+`stringPublisher` directly emits the speech text recognized (By default, it will emit partial results, which means **you may receive multiple events**). You will receive a `.finished` completion event whenever the recognizer finishes processing the user's voice (i.e. `sfSpeechRecognitionResult.isFinal == true`), or you explicitly called the `cancel()` method on the recognizer. Afterward, the recognizer instance will be immediately disposed of.
+You can subscribe to `stringPublisher` in the following way:
 ```swift
 speechRecognizer.stringPublisher
     .sink { text in
@@ -56,7 +69,7 @@ If you are not interested in the recognition result any more and want to stop re
 #### `isSpeechRecognitionAvailable` Environment Key
 Add the modifier `.automaticEnvironmentForSpeechRecognition()` to your root view or the view you want to use speech recognition in. This will automatically request authorization when the view appears and set the `isSpeechRecognitionAvailable` environment for the view.
 
-Then, use the following code whenever you want to know if speech recognition is available in your view (e.g. when writting a button for recording, you may want to disable it whenever speech recognition is unavailable).
+Then, use the following code whenever you want to know if speech recognition is available in your view (e.g. when writing a button for recording, you may want to disable it whenever speech recognition is unavailable).
 ```swift
 @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
 ```

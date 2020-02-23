@@ -24,8 +24,8 @@ public extension View {
         recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
         recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
         locale: Locale = .autoupdatingCurrent,
-        animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> some View {
-        
+        animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.Base> {
         self.modifier(
             SwiftSpeech.ViewModifiers.RecordOnHold.Base(
                 locale: locale,
