@@ -1,5 +1,7 @@
 # SwiftSpeech
 
+**Speech Recognition, as simple and elegant as SwiftUI.**
+
 <p>
 <a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
 <a href="https://developer.apple.com/ios"><img src="https://img.shields.io/badge/iOS-13%2B-blue"></a>
@@ -8,22 +10,85 @@
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
+#### 🚧 README Under Construction... But stars are welcomed! 😉
+
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
 
 SwiftSpeech is a wrapper framework for the Speech / SFSpeechRecognizer APIs for iOS and macOS with built-in SwiftUI, Combine publisher, and multi-language support.
 
+- [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-- [SwiftUI Support](#swiftui)
+- [Getting Started](#getting-started)
 - [License](#license)
+
+## Features
+
+- [x] UI control + Speech recognition in just one line of code.
+- [x] SwiftUI style APIs.
+- [x] Combine support.
+- [x] Build your own controls!
+- [x] Fully open low level APIs.
 
 ## Installation
 SwiftSpeech is available through Swift Package Manager. To use it, add a package dependency using URL:
-```
+```html
 https://github.com/Cay-Zhang/SwiftSpeech.git
 ```
 
-## Usage
+## Getting Started
+### 1. Authorization
+Although SwiftSpeech takes care of all the verbose stuff of authorization for you, you still have to state the usage descriptions and specify where you want the authorization process to happen before you start to use it.
+#### Usage Descriptions in Info.plist
+If you haven't, add these two rows in your `Info.plist`:
+`NSSpeechRecognitionUsageDescription` and `NSMicrophoneUsageDescription`.
+
+These are the messages your users will see on their first use, in the alerts that ask them for permission to use speech recognition and to access the microphone.
+
+Here's an exmample:
+```xml
+<key>NSSpeechRecognitionUsageDescription</key>
+<string>This app uses speech recognition to convert your speech into text.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>This app uses the mircrophone to record audio for speech recognition.</string>
+```
+#### One line of code to tackle authorization
+In your `SceneDelegate.swift`, add  `.automaticEnvironmentForSpeechRecognition()` after the initialization of your root view. *Boom! That's it! One line of code!* 
+```swift
+func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    let contentView = ContentView()
+        .automaticEnvironmentForSpeechRecognition()  // Just add this line of code!
+
+    if let windowScene = scene as? UIWindowScene {
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = UIHostingController(rootView: contentView)
+        self.window = window
+        window.makeKeyAndVisible()
+    }
+}
+```
+For more information, please refer to the documentation for `automaticEnvironmentForSpeechRecognition()` in `Extensions.swift`.
+### 2. Try some demos
+You can now start to try out some light-weight demos bundled with the framework using Xcode 11's new preview feature.
+In any of your previews, initialize one of the demo views:
+```swift
+static var previews: some View {
+
+    // Both of the demo views below can take a `localeIdentifier: String` as an argument.
+    // Example locale identifiers:
+    // 简体中文（中国）= "zh_Hans_CN"
+    // English (US) = "en_US"
+    // 日本語（日本）= "ja_JP"
+    
+    // Try one of these at a time and have fun!
+    SwiftSpeech.Demos.Basic(localeIdentifier: yourLocaleString)
+    SwiftSpeech.Demos.List(localeIdentifier: yourLocaleString)
+    
+}
+```
+Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the `Preview on Device` button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
+### 3. Build it yourself
+
+## Legacy
 ### SpeechRecognizer Class
 #### Initializing
 ```swift
@@ -65,13 +130,12 @@ SpeechRecognizer.recognizer(withID: recordingChoiceID)?.cancel()
 ```
 If you are not interested in the recognition result any more and want to stop recording now, you may immediately halt the recognition process and dipose of the recognizer by calling this method.
 
-### SwiftUI Support
-#### `isSpeechRecognitionAvailable` Environment Key
-Add the modifier `.automaticEnvironmentForSpeechRecognition()` to your root view or the view you want to use speech recognition in. This will automatically request authorization when the view appears and set the `isSpeechRecognitionAvailable` environment for the view.
+## License
+SwiftSpeech is available under the [MIT license](https://choosealicense.com/licenses/mit/).
+
+
 
 Then, use the following code whenever you want to know if speech recognition is available in your view (e.g. when writing a button for recording, you may want to disable it whenever speech recognition is unavailable).
 ```swift
 @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
 ```
-## License
-SwiftSpeech is available under the [MIT license](https://choosealicense.com/licenses/mit/).
