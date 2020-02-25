@@ -12,6 +12,8 @@
 
 #### 🚧 README Under Construction... But stars are welcomed! 😉
 
+![A few lines of code to do this!](https://i.loli.net/2020/02/25/kfBvALEDYspRqtP.gif)
+
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
 
 SwiftSpeech is a wrapper framework for the Speech / SFSpeechRecognizer APIs for iOS and macOS with built-in SwiftUI, Combine publisher, and multi-language support.
@@ -73,7 +75,7 @@ In any of your previews, initialize one of the demo views:
 ```swift
 static var previews: some View {
 
-    // Both of the demo views below can take a `localeIdentifier: String` as an argument.
+    // Two of the demo views below can take a `localeIdentifier: String` as an argument.
     // Example locale identifiers:
     // 简体中文（中国）= "zh_Hans_CN"
     // English (US) = "en_US"
@@ -81,11 +83,15 @@ static var previews: some View {
     
     // Try one of these at a time and have fun!
     SwiftSpeech.Demos.Basic(localeIdentifier: yourLocaleString)
+    SwiftSpeech.Demos.Colors()
     SwiftSpeech.Demos.List(localeIdentifier: yourLocaleString)
     
 }
 ```
 Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the `Preview on Device` button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
+
+Here are some previews of the demos:
+
 ### 3. Build it yourself
 
 ## Legacy
