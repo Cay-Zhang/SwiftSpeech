@@ -10,8 +10,6 @@
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
-#### 🚧 README Under Construction... But stars are welcomed! 😉
-
 ![A few lines of code to do this!](https://i.loli.net/2020/02/25/kfBvALEDYspRqtP.gif)
 
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
@@ -92,7 +90,24 @@ Open up the Canvas and resume the preview if needed. You should see what your de
 
 Here are some previews of the demos:
 
+🚧 Gifs still in making... Give me a star to keep me motivated!
+
 ### 3. Build it yourself
+
+Knowing what this framework can do, you can now start to learn about the concepts in SwiftSpeech.
+
+Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is this:
+```swift
+SwiftSpeech.RecordButton()  // The "View Component", this here is just an example bundled in the framework, you can easily build your own.
+    .swiftSpeechRecordOnHold(  // The "Functional Component" (Actually they are View Modifiers)
+        recognizedText: $text,
+        locale: self.locale,
+        animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
+    )
+```
+As you can see, the "Record Button" is composed of two components: a `View` that is only responsible of UI (The "**View Component**"), wrapped in a `ViewModifier` provided by the framework to handle all the stuff about speech recognition (The "**Functional Component**").
+
+🚧 Documentation still in making... Give me a star to keep me motivated!
 
 ## Legacy
 ### SpeechRecognizer Class
