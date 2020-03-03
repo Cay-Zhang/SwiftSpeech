@@ -107,6 +107,25 @@ SwiftSpeech.RecordButton()  // The "View Component", this here is just an exampl
 ```
 As you can see, the "Record Button" is composed of two components: a `View` that is only responsible of UI (The "**View Component**"), wrapped in a `ViewModifier` provided by the framework to handle all the stuff about speech recognition (The "**Functional Component**").
 
+For now, you can just use the sample view component provided by the framework: `SwiftSpeech.RecordButton`. Let's first familiarize ourselves with the functional component.
+Currently, there are three functional components available, all of them providing "Record On Hold" speech recognition capability, with different levels of abstraction:
+
+```swift
+// 1
+func swiftSpeechRecordOnHold(
+    recognizedText: Binding<String>,
+    locale: Locale = .autoupdatingCurrent,
+    animation: Animation = defaultAnimation
+) -> some View
+```
+The first one is the most straight forward and convenient. It takes a `Binding<String>` and updates the latest recognition result to it. You can pass in the other two arguments which let you specify a locale (language) for recognition and an animation used when user interacts with the view component. You can use these two arguments in other functional components as well.
+
+```swift
+// 2
+func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale:animation:) -> some View
+```
+The second one is less intuitive but more powerful.
+
 🚧 Documentation still in making... Give me a star to keep me motivated!
 
 ## Legacy
