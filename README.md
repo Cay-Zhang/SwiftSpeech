@@ -99,7 +99,7 @@ Knowing what this framework can do, you can now start to learn about the concept
 Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is this:
 ```swift
 SwiftSpeech.RecordButton()  // The "View Component", this here is just an example bundled in the framework, you can easily build your own.
-    .swiftSpeechRecordOnHold(  // The "Functional Component" (Actually they are View Modifiers)
+.swiftSpeechRecordOnHold(  // The "Functional Component" (Actually they are view modifiers).
         recognizedText: $text,
         locale: self.locale,
         animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
@@ -112,6 +112,8 @@ Currently, there are three functional components available, all of them providin
 
 ```swift
 // 1
+// `SwiftSpeech.Demos.Basic` & `SwiftSpeech.Demos.Colors` use this component.
+// Inspect the source code of them if you want examples!
 func swiftSpeechRecordOnHold(
     recognizedText: Binding<String>,
     locale: Locale = .autoupdatingCurrent,
@@ -120,11 +122,28 @@ func swiftSpeechRecordOnHold(
 ```
 The first one is the most straight forward and convenient. It takes a `Binding<String>` and updates the latest recognition result to it. You can pass in the other two arguments which let you specify a locale (language) for recognition and an animation used when user interacts with the view component. You can use these two arguments in other functional components as well.
 
+But frankly, this is more of a shortcut for playing/testing since many apps have to deal with some complicated underlying database and a simple `Binding` is just not enough for them. And that's when the second one comes to rescue.
+
 ```swift
 // 2
-func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale:animation:) -> some View
+// `SwiftSpeech.Demos.List` uses this component.
+// Inspect the source code of it if you want examples!
+func swiftSpeechRecordOnHold(
+    recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?,
+    recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
+    recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
+    locale...animation...
+) -> some View
 ```
-The second one is less intuitive but more powerful.
+The second one gives you utter control over the whole lifespan of a `SwiftSpeech.Session`. As the argument names and types suggest, this component runs the provided closures after a recording was started/stopped/canceled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which will be discussed below.
+
+```swift
+// 3
+// The first functional component introduced above is based on this.
+// Inspect `SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding` to have an intuition about how to utilize the `sessionSubject`.
+func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale...animation...) -> some View
+```
+The last one is less intuitive but might be useful in some cases where it's easier to use a reactive programming style. The only new argument here is the `sessionSubject` which conforms to the `Combine.Subject` protocol (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the view will send a `SwiftSpeech.Session` to the `sessionSubject` **after a new recording was started**.
 
 🚧 Documentation still in making... Give me a star to keep me motivated!
 

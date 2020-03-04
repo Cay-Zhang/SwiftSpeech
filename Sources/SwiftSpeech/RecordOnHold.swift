@@ -10,6 +10,7 @@ import Combine
 
 public extension SwiftSpeech.ViewModifiers.RecordOnHold {
     
+    /// Change this when the app starts to configure the default animation used for all record on hold functional components.
     static var defaultAnimation: Animation = .interactiveSpring()
     
     struct Base : ViewModifier {
