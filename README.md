@@ -10,7 +10,7 @@
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
-![A few lines of code to do this!](https://i.loli.net/2020/02/25/kfBvALEDYspRqtP.gif)
+![A few lines of code to do this!](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Pitch.gif)
 
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
 
