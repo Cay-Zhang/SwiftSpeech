@@ -88,9 +88,8 @@ static var previews: some View {
 ```
 Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the `Preview on Device` button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
 
-Here are some previews of the demos:
-
-🚧 Gifs still in making... Give me a star to keep me motivated!
+Here are the "previews" of your `previews`:
+![Demos](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Demos.gif)
 
 ### 3. Build it yourself
 
