@@ -9,35 +9,60 @@ import SwiftUI
 import Combine
 import Speech
 
-// isSpeechRecognitionAvailable Environment
-public struct IsSpeechRecognitionAvailableKey: EnvironmentKey {
-    public static let defaultValue: Bool = false
+extension SwiftSpeech.EnvironmentKeys {
+    struct IsSpeechRecognitionAvailable: EnvironmentKey {
+        static let defaultValue: Bool = false
+    }
+    
+    struct IsRecording: EnvironmentKey {
+        static let defaultValue: Bool = false
+    }
+    
+    struct ActionsOnStartRecording: EnvironmentKey {
+        static let defaultValue: [(_ session: SwiftSpeech.Session) -> Void] = []
+    }
+    
+    struct ActionsOnStopRecording: EnvironmentKey {
+        static let defaultValue: [(_ session: SwiftSpeech.Session) -> Void] = []
+    }
+    
+    struct ActionsOnCancelRecording: EnvironmentKey {
+        static let defaultValue: [(_ session: SwiftSpeech.Session) -> Void] = []
+    }
 }
 
 public extension EnvironmentValues {
     var isSpeechRecognitionAvailable: Bool {
         get {
-            return self[IsSpeechRecognitionAvailableKey.self]
+            return self[SwiftSpeech.EnvironmentKeys.IsSpeechRecognitionAvailable.self]
         }
         set {
-            self[IsSpeechRecognitionAvailableKey.self] = newValue
+            self[SwiftSpeech.EnvironmentKeys.IsSpeechRecognitionAvailable.self] = newValue
         }
     }
-}
-
-// isRecording Environment
-public struct IsRecordingKey: EnvironmentKey {
-    public static let defaultValue: Bool = false
-}
-
-public extension EnvironmentValues {
+    
     var isRecording: Bool {
         get {
-            return self[IsRecordingKey.self]
+            return self[SwiftSpeech.EnvironmentKeys.IsRecording.self]
         }
         set {
-            self[IsRecordingKey.self] = newValue
+            self[SwiftSpeech.EnvironmentKeys.IsRecording.self] = newValue
         }
+    }
+    
+    var actionsOnStartRecording: [(_ session: SwiftSpeech.Session) -> Void] {
+        get { self[SwiftSpeech.EnvironmentKeys.ActionsOnStartRecording.self] }
+        set { self[SwiftSpeech.EnvironmentKeys.ActionsOnStartRecording.self] = newValue }
+    }
+    
+    var actionsOnStopRecording: [(_ session: SwiftSpeech.Session) -> Void] {
+        get { self[SwiftSpeech.EnvironmentKeys.ActionsOnStopRecording.self] }
+        set { self[SwiftSpeech.EnvironmentKeys.ActionsOnStopRecording.self] = newValue }
+    }
+    
+    var actionsOnCancelRecording: [(_ session: SwiftSpeech.Session) -> Void] {
+        get { self[SwiftSpeech.EnvironmentKeys.ActionsOnCancelRecording.self] }
+        set { self[SwiftSpeech.EnvironmentKeys.ActionsOnCancelRecording.self] = newValue }
     }
 }
 

@@ -10,35 +10,44 @@ import Combine
 import Speech
 
 public extension View {
-    func swiftSpeechRecordOnHold(recognizedText: Binding<String>, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding> {
-        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding(recognizedText: recognizedText, locale: locale, animation: animation))
-    }
-    
-    func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject<S>>
-    where S.Output == SwiftSpeech.Session?, S.Failure == Never {
-        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
-    }
+//    func swiftSpeechRecordOnHold(recognizedText: Binding<String>, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding> {
+//        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding(recognizedText: recognizedText, locale: locale, animation: animation))
+//    }
+//
+//    func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject<S>>
+//    where S.Output == SwiftSpeech.Session?, S.Failure == Never {
+//        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
+//    }
     
     func swiftSpeechRecordOnHold(
-        recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?,
-        recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
-        recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
         locale: Locale = .autoupdatingCurrent,
         animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.Base> {
         self.modifier(
             SwiftSpeech.ViewModifiers.RecordOnHold.Base(
                 locale: locale,
-                animation: animation,
-                recordingDidStart: recordingDidStart,
-                recordingDidStop: recordingDidStop,
-                recordingDidCancel: recordingDidCancel
+                animation: animation
             )
         )
         
     }
     
 }
+
+public extension View {
+    func updating(_ textBinding: Binding<String>) -> some View {
+        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding(recognizedText: textBinding))
+    }
+    
+    func printRecognizedText(_ prefix: String = "") -> some View {
+        let binding = Binding<String>(
+            get: { "" },
+            set: { print($0) }
+        )
+        return self.updating(binding)
+    }
+}
+
 
 public extension View {
     /// Returns a view wrapping self that automatically requests speech recognition authorization on appear and sets the corresponding environment value.

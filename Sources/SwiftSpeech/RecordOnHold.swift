@@ -17,15 +17,14 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         
         var locale: Locale = .autoupdatingCurrent
         var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
-        var recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?
-        var recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)?
-        var recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)?
         
         @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
         @State var recordingSession: SwiftSpeech.Session? = nil
         @State var isRecording: Bool = false
         
-        
+        @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
+        @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
+        @Environment(\.actionsOnCancelRecording) var actionsOnCancelRecording
         
         var gesture: some Gesture {
             let longPress = LongPressGesture(minimumDuration: 60)
@@ -59,13 +58,19 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
             self.isRecording = true
             self.recordingSession = session
             try! session.startRecording()
-            self.recordingDidStart?(session)
+//            self.recordingDidStart?(session)
+            for action in actionsOnStartRecording {
+                action(session)
+            }
         }
         
         fileprivate func cancelRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             session.cancel()
-            self.recordingDidCancel?(session)
+//            self.recordingDidCancel?(session)
+            for action in actionsOnCancelRecording {
+                action(session)
+            }
             self.isRecording = false
             self.recordingSession = nil
         }
@@ -73,7 +78,10 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         fileprivate func endRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             recordingSession?.stopRecording()
-            self.recordingDidStop?(session)
+//            self.recordingDidStop?(session)
+            for action in actionsOnStopRecording {
+                action(session)
+            }
             self.isRecording = false
             self.recordingSession = nil
         }
@@ -83,34 +91,18 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
     struct SessionSubject<S: Subject> : ViewModifier where S.Output == SwiftSpeech.Session?, S.Failure == Never {
         
         @State var sessionSubject: S
-        var locale: Locale = .autoupdatingCurrent
-        var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
         
         public func body(content: Content) -> some View {
-            ModifiedContent(content: content, modifier: Base(
-                locale: locale,
-                animation: animation,
-                recordingDidStart: recordingDidStart(_:),
-                recordingDidStop: recordingDidStop(_:),
-                recordingDidCancel: recordingDidCancel(_:))
-            )
+            content.onStartRecording { session in
+                self.sessionSubject.send(session)
+            }
         }
-        
-        private func recordingDidStart(_ session: SwiftSpeech.Session) -> Void {
-            self.sessionSubject.send(session)
-        }
-        
-        private func recordingDidStop(_ session: SwiftSpeech.Session) -> Void { }
-        
-        private func recordingDidCancel(_ session: SwiftSpeech.Session) -> Void { }
         
     }
     
     struct StringBinding : ViewModifier {
         
         @Binding var recognizedText: String
-        var locale: Locale = .autoupdatingCurrent
-        var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
         
         @State private var sessionSubject = CurrentValueSubject<SwiftSpeech.Session?, Never>(nil)
         
@@ -122,7 +114,7 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         }
         
         public func body(content: Content) -> some View {
-            ModifiedContent(content: content, modifier: SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
+            ModifiedContent(content: content, modifier: SessionSubject(sessionSubject: sessionSubject))
                 .onReceive(self.publisher) { string in
                     self.recognizedText = string
                 }
@@ -130,4 +122,24 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         
     }
     
+}
+
+public extension View {
+    func onStartRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnStartRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
+    }
+    
+    func onStopRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnStopRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
+    }
+    
+    func onCancelRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnCancelRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
+    }
 }
