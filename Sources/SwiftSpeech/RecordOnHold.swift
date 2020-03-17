@@ -8,15 +8,12 @@
 import SwiftUI
 import Combine
 
-public extension SwiftSpeech.ViewModifiers.RecordOnHold {
+public extension SwiftSpeech.ViewModifiers {
     
-    /// Change this when the app starts to configure the default animation used for all record on hold functional components.
-    static var defaultAnimation: Animation = .interactiveSpring()
-    
-    struct Base : ViewModifier {
+    struct RecordOnHold : ViewModifier {
         
         var locale: Locale = .autoupdatingCurrent
-        var animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
+        var animation: Animation = SwiftSpeech.defaultAnimation
         
         @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
         @State var recordingSession: SwiftSpeech.Session? = nil
@@ -58,7 +55,6 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
             self.isRecording = true
             self.recordingSession = session
             try! session.startRecording()
-//            self.recordingDidStart?(session)
             for action in actionsOnStartRecording {
                 action(session)
             }
@@ -67,7 +63,6 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         fileprivate func cancelRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             session.cancel()
-//            self.recordingDidCancel?(session)
             for action in actionsOnCancelRecording {
                 action(session)
             }
@@ -78,7 +73,6 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         fileprivate func endRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             recordingSession?.stopRecording()
-//            self.recordingDidStop?(session)
             for action in actionsOnStopRecording {
                 action(session)
             }
@@ -87,6 +81,12 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         }
         
     }
+    
+
+    
+}
+
+public extension SwiftSpeech.ViewModifiers {
     
     struct SessionSubject<S: Subject> : ViewModifier where S.Output == SwiftSpeech.Session?, S.Failure == Never {
         
@@ -100,9 +100,9 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         
     }
     
-    struct StringBinding : ViewModifier {
+    struct OnRecognize : ViewModifier {
         
-        @Binding var recognizedText: String
+        let textHandler: (String) -> Void
         
         @State private var sessionSubject = CurrentValueSubject<SwiftSpeech.Session?, Never>(nil)
         
@@ -116,7 +116,7 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
         public func body(content: Content) -> some View {
             ModifiedContent(content: content, modifier: SessionSubject(sessionSubject: sessionSubject))
                 .onReceive(self.publisher) { string in
-                    self.recognizedText = string
+                    self.textHandler(string)
                 }
         }
         
@@ -124,22 +124,3 @@ public extension SwiftSpeech.ViewModifiers.RecordOnHold {
     
 }
 
-public extension View {
-    func onStartRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
-        self.transformEnvironment(\.actionsOnStartRecording) { actions in
-            actions.insert(actionToAppend, at: 0)
-        }
-    }
-    
-    func onStopRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
-        self.transformEnvironment(\.actionsOnStopRecording) { actions in
-            actions.insert(actionToAppend, at: 0)
-        }
-    }
-    
-    func onCancelRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
-        self.transformEnvironment(\.actionsOnCancelRecording) { actions in
-            actions.insert(actionToAppend, at: 0)
-        }
-    }
-}
