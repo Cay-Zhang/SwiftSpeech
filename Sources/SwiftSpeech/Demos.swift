@@ -30,20 +30,18 @@ public extension SwiftSpeech.Demos {
                 Text(text)
                     .font(.system(size: 25, weight: .bold, design: .default))
                 SwiftSpeech.RecordButton()
-                    .swiftSpeechRecordOnHold(
-                        recognizedText: $text,
-                        locale: self.locale,
-                        animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
-                    )
+                    .swiftSpeechRecordOnHold(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                    .onRecognize(update: $text)
+                
             }.automaticEnvironmentForSpeechRecognition()
         }
         
     }
     
     struct Colors : View {
-        
+
         @State private var text = "Say a Color!"
-        
+
         static let colorDictionary: [String : Color] = [
             "black": .black,
             "white": .white,
@@ -56,7 +54,7 @@ public extension SwiftSpeech.Demos {
             "red": .red,
             "yellow": .yellow
         ]
-        
+
         var color: Color? {
             Colors.colorDictionary
                 .first { pair in
@@ -64,35 +62,32 @@ public extension SwiftSpeech.Demos {
                 }?
                 .value
         }
-        
+
         public init() { }
-        
+
         public var body: some View {
             VStack(spacing: 35.0) {
                 Text(text)
                     .font(.system(size: 25, weight: .bold, design: .default))
                     .foregroundColor(color)
                 SwiftSpeech.RecordButton()
-                    .swiftSpeechRecordOnHold(
-                        recognizedText: $text,
-                        locale: Locale(identifier: "en_US"),
-                        animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
-                    )
+                    .swiftSpeechRecordOnHold(locale: Locale(identifier: "en_US"), animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                    .onRecognize(update: $text)
             }.automaticEnvironmentForSpeechRecognition()
         }
-        
+
     }
-    
+
     struct List : View {
-        
+
         var locale: Locale
-        
+
         @ObservedObject var viewModel = ViewModel()
-        
+
         class ViewModel: ObservableObject {
             @Published var list: [(id: SpeechRecognizer.ID, text: String)] = []
             var cancelBag = Set<AnyCancellable>()
-            
+
             func recordingDidStart(session: SwiftSpeech.Session) {
                 guard let publisher = session.resultPublisher else { return }
                 let id = session.id
@@ -118,22 +113,22 @@ public extension SwiftSpeech.Demos {
                     }
                     .store(in: &self.cancelBag)
             }
-            
+
             func recordingDidCancel(session: SwiftSpeech.Session) {
                 guard let index = self.list.firstIndex(where: { pair in pair.id == session.id }) else { return }
                 self.list.remove(at: index)
             }
-            
+
         }
-        
+
         public init(locale: Locale = .autoupdatingCurrent) {
             self.locale = locale
         }
-        
+
         public init(localeIdentifier: String) {
             self.locale = Locale(identifier: localeIdentifier)
         }
-        
+
         public var body: some View {
             NavigationView {
                 SwiftUI.List {
@@ -143,17 +138,14 @@ public extension SwiftSpeech.Demos {
                 }
                 .overlay(
                     SwiftSpeech.RecordButton()
-                        .swiftSpeechRecordOnHold(
-                            recordingDidStart: self.viewModel.recordingDidStart,
-                            recordingDidCancel: self.viewModel.recordingDidCancel,
-                            locale: self.locale,
-                            animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
-                        )
+                        .swiftSpeechRecordOnHold(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                        .onStartRecording(appendAction: self.viewModel.recordingDidStart(session:))
+                        .onCancelRecording(appendAction: self.viewModel.recordingDidCancel(session:))
                         .padding(20),
                     alignment: .bottom
                 )
                 .navigationBarTitle(Text("SwiftSpeech"))
-                
+
             }.automaticEnvironmentForSpeechRecognition()
         }
     }

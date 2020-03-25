@@ -10,34 +10,55 @@ import Combine
 import Speech
 
 public extension View {
-    func swiftSpeechRecordOnHold(recognizedText: Binding<String>, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding> {
-        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding(recognizedText: recognizedText, locale: locale, animation: animation))
+    func onStartRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnStartRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
     }
     
-    func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject<S>>
-    where S.Output == SwiftSpeech.Session?, S.Failure == Never {
-        self.modifier(SwiftSpeech.ViewModifiers.RecordOnHold.SessionSubject(sessionSubject: sessionSubject, locale: locale, animation: animation))
+    func onStopRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnStopRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
     }
+    
+    func onCancelRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+        self.transformEnvironment(\.actionsOnCancelRecording) { actions in
+            actions.insert(actionToAppend, at: 0)
+        }
+    }
+}
+
+public extension View {
     
     func swiftSpeechRecordOnHold(
-        recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?,
-        recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
-        recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
         locale: Locale = .autoupdatingCurrent,
-        animation: Animation = SwiftSpeech.ViewModifiers.RecordOnHold.defaultAnimation
-    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold.Base> {
+        animation: Animation = SwiftSpeech.defaultAnimation
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold> {
         self.modifier(
-            SwiftSpeech.ViewModifiers.RecordOnHold.Base(
+            SwiftSpeech.ViewModifiers.RecordOnHold(
                 locale: locale,
-                animation: animation,
-                recordingDidStart: recordingDidStart,
-                recordingDidStop: recordingDidStop,
-                recordingDidCancel: recordingDidCancel
+                animation: animation
             )
         )
         
     }
     
+    func onRecognize(_ textHandler: @escaping (String) -> Void) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        self.modifier(SwiftSpeech.ViewModifiers.OnRecognize(textHandler: textHandler))
+    }
+    
+    func onRecognize(update textBinding: Binding<String>) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        self.onRecognize { text in
+            textBinding.wrappedValue = text
+        }
+    }
+    
+    func printRecognizedText() -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        self.onRecognize { text in
+            print("[SwiftSpeech] Recognized Text: \(text)")
+        }
+    }
 }
 
 public extension View {
