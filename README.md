@@ -1,6 +1,6 @@
 # SwiftSpeech
 
-**Speech Recognition, as simple and elegant as SwiftUI.**
+**Speech Recognition Made Simple**
 
 <p>
 <a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
@@ -10,11 +10,9 @@
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
-![A few lines of code to do this!](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Pitch.gif)
+![A few lines of code to do this!](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Pitch.gif?raw=true)
 
-**Recognize your user's voice elegantly without having to figure out authorization and audio engines, with built-in SwiftUI, Combine, and multi-language support.**
-
-SwiftSpeech is a wrapper framework for the Speech / SFSpeechRecognizer APIs for iOS and macOS with built-in SwiftUI, Combine publisher, and multi-language support.
+**Recognize your user's voice elegantly without having to figure out authorization and audio engines.**
 
 - [Features](#features)
 - [Installation](#installation)
@@ -22,11 +20,11 @@ SwiftSpeech is a wrapper framework for the Speech / SFSpeechRecognizer APIs for 
 - [License](#license)
 
 ## Features
+**SwiftSpeech** is a wrapper for Apple's **Speech** framework with deep **SwiftUI** and **Combine** integration.
 
-- [x] UI control + Speech recognition in just one line of code.
-- [x] SwiftUI style APIs.
-- [x] Combine support.
-- [x] Build your own controls!
+- [x] UI control + speech recognition functionality in just several lines of code.
+- [x] SwiftUI style reactive APIs and Combine support.
+- [x] Highly customizable but also keeping your code highly resuable via a composable structure.
 - [x] Fully open low level APIs.
 
 ## Installation
@@ -86,10 +84,11 @@ static var previews: some View {
     
 }
 ```
-Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the `Preview on Device` button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
+Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the <img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Preview_on_Device.png?raw=true" alt="Preview on Device" align=center/> button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
 
 Here are the "previews" of your `previews`:
-![Demos](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Demos.gif)
+
+![Demos](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Demos.gif?raw=true)
 
 ### 3. Build it yourself
 
