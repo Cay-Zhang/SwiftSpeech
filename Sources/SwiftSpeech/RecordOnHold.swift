@@ -88,18 +88,6 @@ public extension SwiftSpeech.ViewModifiers {
 
 public extension SwiftSpeech.ViewModifiers {
     
-    struct SessionSubject<S: Subject> : ViewModifier where S.Output == SwiftSpeech.Session?, S.Failure == Never {
-        
-        @State var sessionSubject: S
-        
-        public func body(content: Content) -> some View {
-            content.onStartRecording { session in
-                self.sessionSubject.send(session)
-            }
-        }
-        
-    }
-    
     struct OnRecognize : ViewModifier {
         
         let textHandler: (String) -> Void
@@ -114,7 +102,8 @@ public extension SwiftSpeech.ViewModifiers {
         }
         
         public func body(content: Content) -> some View {
-            ModifiedContent(content: content, modifier: SessionSubject(sessionSubject: sessionSubject))
+            content
+                .onStartRecording(sendSessionTo: sessionSubject)
                 .onReceive(self.publisher) { string in
                     self.textHandler(string)
                 }

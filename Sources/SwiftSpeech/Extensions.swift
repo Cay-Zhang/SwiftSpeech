@@ -30,6 +30,44 @@ public extension View {
 }
 
 public extension View {
+    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+        self.onStartRecording { session in
+            subject.send(session)
+        }
+    }
+    
+    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+        self.onStartRecording { session in
+            subject.send(session)
+        }
+    }
+    
+    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+        self.onStopRecording { session in
+            subject.send(session)
+        }
+    }
+    
+    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+        self.onStopRecording { session in
+            subject.send(session)
+        }
+    }
+    
+    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+        self.onCancelRecording { session in
+            subject.send(session)
+        }
+    }
+    
+    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+        self.onCancelRecording { session in
+            subject.send(session)
+        }
+    }
+}
+
+public extension View {
     
     func swiftSpeechRecordOnHold(
         locale: Locale = .autoupdatingCurrent,

@@ -17,6 +17,9 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
+- [SwiftSpeech.Session](#swiftspeech.session)
+- [Customized View Components](#customized-view-components)
+- [Customized Functional Components](#customized-functional-components)
 - [License](#license)
 
 ## Features
@@ -84,7 +87,7 @@ static var previews: some View {
     
 }
 ```
-Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on the <img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Preview_on_Device.png?raw=true" alt="Preview on Device" align=center/> button to the bottom right edge of the preview device to run the demo. Hold on the blue circular button to speak and the recognition result will show up! 😉
+Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on <img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Preview_on_Device.png?raw=true" alt="Preview on Device" height=30/> button to run the demo on your device. Hold on the blue circular button to speak and the recognition result will show up! 😉
 
 Here are the "previews" of your `previews`:
 
@@ -96,103 +99,89 @@ Knowing what this framework can do, you can now start to learn about the concept
 
 Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is this:
 ```swift
-SwiftSpeech.RecordButton()  // The "View Component", this here is just an example bundled in the framework, you can easily build your own.
-.swiftSpeechRecordOnHold(  // The "Functional Component" (Actually they are view modifiers).
-        recognizedText: $text,
-        locale: self.locale,
-        animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0)
-    )
+SwiftSpeech.RecordButton()                       // 1. The View Component
+    .swiftSpeechRecordOnHold(locale:animation:)  // 2. The Functional Component
+    .onRecognize(update: $text)                  // 3. SwiftSpeech Modifier(s)
 ```
-As you can see, the "Record Button" is composed of two components: a `View` that is only responsible of UI (The "**View Component**"), wrapped in a `ViewModifier` provided by the framework to handle all the stuff about speech recognition (The "**Functional Component**").
+There are three parts here (and luckily, you can customize every one of them!):
+1. **The View Component**: A `View` that is only responsible for UI.
+2. **The Functional Component**: A component that provides the essential funtionality of speech recognition. The two arguments let you specify a locale (language) for recognition and an animation used when user interacts with the View Component.
+3. **SwiftSpeech Modifier(s)**: One or more components allowing you to receive and manipulate the recognition results. They can be stacked together to create powerful effects.
 
-For now, you can just use the sample view component provided by the framework: `SwiftSpeech.RecordButton`. Let's first familiarize ourselves with the functional component.
-Currently, there are three functional components available, all of them providing "Record On Hold" speech recognition capability, with different levels of abstraction:
+For now, you can just use the built-in View Component and Functional Component. Let's explore some **SwiftSpeech Modifiers** first since every app handles its data differently:
+
+**Important: Chaining multiple or identical SwiftSpeech Modifiers together doesn't override any behavior. All actions of the modifiers will be excuted in the order where the closest to the Functional Component excutes first and the farest excutes last.**
 
 ```swift
 // 1
-// `SwiftSpeech.Demos.Basic` & `SwiftSpeech.Demos.Colors` use this component.
+// `SwiftSpeech.Demos.Basic` & `SwiftSpeech.Demos.Colors` use these modifiers.
 // Inspect the source code of them if you want examples!
-func swiftSpeechRecordOnHold(
-    recognizedText: Binding<String>,
-    locale: Locale = .autoupdatingCurrent,
-    animation: Animation = defaultAnimation
-) -> some View
+.onRecognize(textHandler: (String) -> Void)
+.onRecognize(update: Binding<String>)
+.printRecognizedText()
 ```
-The first one is the most straight forward and convenient. It takes a `Binding<String>` and updates the latest recognition result to it. You can pass in the other two arguments which let you specify a locale (language) for recognition and an animation used when user interacts with the view component. You can use these two arguments in other functional components as well.
+The first kind of modifiers is the most straight forward and convenient. It does something when a new recognition result is yielded.
 
-But frankly, this is more of a shortcut for playing/testing since many apps have to deal with some complicated underlying database and a simple `Binding` is just not enough for them. And that's when the second one comes to rescue.
+But frankly, this is more of a shortcut for playing/testing since many apps have to deal with some complicated underlying database and a simple `Binding` or closure is just not enough for it. And that's when the second set comes to rescue.
 
 ```swift
 // 2
-// `SwiftSpeech.Demos.List` uses this component.
+// `SwiftSpeech.Demos.List` uses these modifiers.
 // Inspect the source code of it if you want examples!
-func swiftSpeechRecordOnHold(
-    recordingDidStart: ((_ session: SwiftSpeech.Session) -> Void)?,
-    recordingDidStop: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
-    recordingDidCancel: ((_ session: SwiftSpeech.Session) -> Void)? = nil,
-    locale...animation...
-) -> some View
+.onStartRecording(appendAction: (SwiftSpeech.Session) -> Void)
+.onStopRecording(appendAction: (SwiftSpeech.Session) -> Void)
+.onCancelRecording(appendAction: (SwiftSpeech.Session) -> Void)
 ```
-The second one gives you utter control over the whole lifespan of a `SwiftSpeech.Session`. As the argument names and types suggest, this component runs the provided closures after a recording was started/stopped/canceled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which will be discussed below.
+
+The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/canceled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
 
 ```swift
 // 3
-// The first functional component introduced above is based on this.
-// Inspect `SwiftSpeech.ViewModifiers.RecordOnHold.StringBinding` to have an intuition about how to utilize the `sessionSubject`.
-func swiftSpeechRecordOnHold<S: Subject>(sessionSubject: S, locale...animation...) -> some View
+// `SwiftSpeech.ViewModifiers.OnRecognize` uses these modifiers.
+// Inspect the source code of it if you want examples!
+.onStartRecording(sendSessionTo: Subject)
+.onStopRecording(sendSessionTo: Subject)
+.onCancelRecording(sendSessionTo: Subject)
 ```
-The last one is less intuitive but might be useful in some cases where it's easier to use a reactive programming style. The only new argument here is the `sessionSubject` which conforms to the `Combine.Subject` protocol (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the view will send a `SwiftSpeech.Session` to the `sessionSubject` **after a new recording was started**.
 
-🚧 Documentation still in making... Give me a star to keep me motivated!
+The third kind might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/canceled.
 
-## Legacy
-### SpeechRecognizer Class
-#### Initializing
-```swift
-let speechRecognizer = SpeechRecognizer.new(id: id, locale: locale)
-```
-This adds a SpeechRecognizer instance to the shared instance pool that's managed by the framework.
+## SwiftSpeech.Session
+### Inside SwiftSpeech's Session Handler
+If you are filling in a `(Session) -> Void` handler provided by the framework, use the publishers provided by the `Session` to receive updates on recogniton results.
 
-⚠️ Warning: You should **never keep** a strong reference to a SpeechRecognizer instance. Instead, use its `id` property to keep track of it.
-#### Start Recording
-```swift
-try speechRecognizer.startRecording()
-```
-This method will set up the audio stuff automatically for you and start recording the user's voice. You can now start receiving the recognition results by subscribing to one of the publishers the recognizer exposes.
-#### Subscribing
-Currently, a SpeechRecognizer instance has two publishers (you only need to subscribe to one of them): `stringPublisher` and `resultPublisher`.
-`stringPublisher` directly emits the speech text recognized (By default, it will emit partial results, which means **you may receive multiple events**). You will receive a `.finished` completion event whenever the recognizer finishes processing the user's voice (i.e. `sfSpeechRecognitionResult.isFinal == true`), or you explicitly called the `cancel()` method on the recognizer. Afterward, the recognizer instance will be immediately disposed of.
+Currently, a `Session` has two publishers (you only need to subscribe to one of them): `stringPublisher` and `resultPublisher`.
+
+`stringPublisher` directly emits the speech text recognized (By default, it will emit partial results, which means **you may receive multiple events**). You will receive a `.finished` completion event when the `Session` finishes processing the user's voice (i.e. `sfSpeechRecognitionResult.isFinal == true`), or you explicitly called the `cancelRecording()` method.
+
 You can subscribe to `stringPublisher` in the following way:
 ```swift
 speechRecognizer.stringPublisher
     .sink { text in
-        print("Speech Recognizer: \(text)")
+        print("[SwiftSpeech]: \(text)")
     }
-    .store(in: &speechRecognizer.cancelBag)
+    .store(in: &someCancelBag)
 ```
 For `resultPublisher`, the subscribing process is similar, except that the type of the element it will emit is `Result<SFSpeechRecognitionResult, Error>` which encapsulates the entire partial result from the underlying `SFSpeechRecognizer` or the error it emits during recognition.
-#### Retrieving
+### Independent Use
+Here's an exmaple of using `Session` to recognize user's voice and receive updates.
 ```swift
-SpeechRecognizer.recognizer(withID: recordingRecognizerID)
+let session = SwiftSpeech.Session(locale: .current)
+try session.startRecording()
+session.stringPublisher?
+    .sink { text in
+        // do something with the text
+    }
+    .store(in: &cancelBag)
 ```
-This returns an optional SpeechRecognizer that you can then use to stop/cancel recording.
-#### Stop Recording
-```swift
-SpeechRecognizer.recognizer(withID: recordingRecognizerID)?.stopRecording()
-```
-This stops recording the user's voice. Please keep in mind that unless you have explicitly call `stopRecording()`, the recognition process will not stop (i.e. you will never receive a completion event from the publishers) because the recognizer will keep recording & recognizing the user's voice.
-#### Cancel
-```swift
-SpeechRecognizer.recognizer(withID: recordingChoiceID)?.cancel()
-```
-If you are not interested in the recognition result any more and want to stop recording now, you may immediately halt the recognition process and dipose of the recognizer by calling this method.
+For more, please refer to the documentation of `SwiftSpeech.Session`.
+
+## Customized View Components
+🚧 Documentation still in making... Give me a star to keep me motivated!
+For now, please refer to the source code of the demos provided by the framework for examples.
+## Customized Functional Components
+🚧 Documentation still in making... Give me a star to keep me motivated!
+For now, please refer to the source code of the demos provided by the framework for examples.
 
 ## License
 SwiftSpeech is available under the [MIT license](https://choosealicense.com/licenses/mit/).
-
-
-
-Then, use the following code whenever you want to know if speech recognition is available in your view (e.g. when writing a button for recording, you may want to disable it whenever speech recognition is unavailable).
-```swift
-@Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
-```

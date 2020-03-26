@@ -10,8 +10,13 @@ import Speech
 import Combine
 
 extension SwiftSpeech {
-    @dynamicMemberLookup
-    public struct Session : Identifiable {
+    
+    /**
+     A `Session` is a light-weight struct that essentially holds a weak reference to its underlying class whose lifespan is managed by the framework.
+     If you are filling in a `(Session) -> Void` handler provided by the framework, you may want to check its `stringPublisher` and `resultPublisher` properties.
+     - Note: You can only call `startRecording()` once on a `Session` and after it completes the recognition task, all of its properties will be `nil` and actions will take no effect.
+     */
+    @dynamicMemberLookup public struct Session : Identifiable {
         public let id: UUID
         
         public subscript<T>(dynamicMember keyPath: KeyPath<SpeechRecognizer, T>) -> T? {
@@ -23,6 +28,16 @@ extension SwiftSpeech {
             _ = SpeechRecognizer.new(id: id, locale: locale)
         }
         
+        /**
+         Sets up the audio stuff automatically for you and start recording the user's voice.
+         
+         - Note: Avoid using this method twice.
+                 Start receiving the recognition results by subscribing to one of the publishers.
+         - Throws: Errors can occur when:
+                   1. There is problem in the structure of the graph. Input can't be routed to output or to a recording tap through converter type nodes.
+                   2. An AVAudioSession error occurred
+                   3. The driver failed to start the hardware
+         */
         public func startRecording() throws {
             guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
             try recognizer.startRecording()
@@ -33,6 +48,9 @@ extension SwiftSpeech {
             recognizer.stopRecording()
         }
         
+        /**
+         Immediately halts the recognition process and invalidate the `Session`.
+         */
         public func cancel() {
             guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
             recognizer.cancel()
@@ -43,6 +61,8 @@ extension SwiftSpeech {
 
 
 
+/// ⚠️ Warning: You should **never keep** a strong reference to a `SpeechRecognizer` instance. Instead, use its `id` property to keep track of it and
+/// use a `SwiftSpeech.Session` whenever it's possible.
 public class SpeechRecognizer {
     
     static var instances = [SpeechRecognizer]()
