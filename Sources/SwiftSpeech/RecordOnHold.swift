@@ -43,8 +43,7 @@ public extension SwiftSpeech.ViewModifiers {
         
         public func body(content: Content) -> some View {
             content
-                .gesture(gesture)
-                .environment(\.isEnabled, isSpeechRecognitionAvailable)
+                .gesture(gesture, including: isSpeechRecognitionAvailable ? .gesture : .none)
                 .environment(\.isRecording, isRecording)
         }
         
