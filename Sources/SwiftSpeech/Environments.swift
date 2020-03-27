@@ -14,8 +14,8 @@ extension SwiftSpeech.EnvironmentKeys {
         static let defaultValue: Bool = false
     }
     
-    struct IsRecording: EnvironmentKey {
-        static let defaultValue: Bool = false
+    struct SwiftSpeechState: EnvironmentKey {
+        static let defaultValue: SwiftSpeech.State = .pending
     }
     
     struct ActionsOnStartRecording: EnvironmentKey {
@@ -41,13 +41,9 @@ public extension EnvironmentValues {
         }
     }
     
-    var isRecording: Bool {
-        get {
-            return self[SwiftSpeech.EnvironmentKeys.IsRecording.self]
-        }
-        set {
-            self[SwiftSpeech.EnvironmentKeys.IsRecording.self] = newValue
-        }
+    var swiftSpeechState: SwiftSpeech.State {
+        get { self[SwiftSpeech.EnvironmentKeys.SwiftSpeechState.self] }
+        set { self[SwiftSpeech.EnvironmentKeys.SwiftSpeechState.self] = newValue }
     }
     
     var actionsOnStartRecording: [(_ session: SwiftSpeech.Session) -> Void] {

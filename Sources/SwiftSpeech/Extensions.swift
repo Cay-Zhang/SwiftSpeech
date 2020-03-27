@@ -71,12 +71,14 @@ public extension View {
     
     func swiftSpeechRecordOnHold(
         locale: Locale = .autoupdatingCurrent,
-        animation: Animation = SwiftSpeech.defaultAnimation
+        animation: Animation = SwiftSpeech.defaultAnimation,
+        distanceToCancel: CGFloat = 50.0
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold> {
         self.modifier(
             SwiftSpeech.ViewModifiers.RecordOnHold(
                 locale: locale,
-                animation: animation
+                animation: animation,
+                distanceToCancel: distanceToCancel
             )
         )
         

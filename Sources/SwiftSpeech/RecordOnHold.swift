@@ -12,12 +12,19 @@ public extension SwiftSpeech.ViewModifiers {
     
     struct RecordOnHold : ViewModifier {
         
-        var locale: Locale = .autoupdatingCurrent
-        var animation: Animation = SwiftSpeech.defaultAnimation
+        public init(locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
+            self.locale = locale
+            self.animation = animation
+            self.distanceToCancel = distanceToCancel
+        }
+        
+        var locale: Locale
+        var animation: Animation
+        var distanceToCancel: CGFloat
         
         @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
         @State var recordingSession: SwiftSpeech.Session? = nil
-        @State var isRecording: Bool = false
+        @State var viewComponentState: SwiftSpeech.State = .pending
         
         @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
         @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
@@ -26,15 +33,24 @@ public extension SwiftSpeech.ViewModifiers {
         var gesture: some Gesture {
             let longPress = LongPressGesture(minimumDuration: 60)
                 .onChanged { _ in
-                    withAnimation(self.animation) { self.startRecording() }
+                    withAnimation(self.animation, self.startRecording)
                 }
             
             let drag = DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    withAnimation(self.animation) {
+                        if value.translation.height < -self.distanceToCancel {
+                            self.viewComponentState = .cancelling
+                        } else {
+                            self.viewComponentState = .recording
+                        }
+                    }
+                }
                 .onEnded { value in
-                    if value.translation.height < -20.0 {
-                        withAnimation(self.animation) { self.cancelRecording() }
+                    if value.translation.height < -self.distanceToCancel {
+                        withAnimation(self.animation, self.cancelRecording)
                     } else {
-                        withAnimation(self.animation) { self.endRecording() }
+                        withAnimation(self.animation, self.endRecording)
                     }
                 }
             
@@ -44,14 +60,14 @@ public extension SwiftSpeech.ViewModifiers {
         public func body(content: Content) -> some View {
             content
                 .gesture(gesture, including: isSpeechRecognitionAvailable ? .gesture : .none)
-                .environment(\.isRecording, isRecording)
+                .environment(\.swiftSpeechState, viewComponentState)
         }
         
         fileprivate func startRecording() {
             let id = SpeechRecognizer.ID()
             let session = SwiftSpeech.Session(id: id, locale: self.locale)
             // View update
-            self.isRecording = true
+            self.viewComponentState = .recording
             self.recordingSession = session
             try! session.startRecording()
             for action in actionsOnStartRecording {
@@ -65,7 +81,7 @@ public extension SwiftSpeech.ViewModifiers {
             for action in actionsOnCancelRecording {
                 action(session)
             }
-            self.isRecording = false
+            self.viewComponentState = .pending
             self.recordingSession = nil
         }
         
@@ -75,7 +91,7 @@ public extension SwiftSpeech.ViewModifiers {
             for action in actionsOnStopRecording {
                 action(session)
             }
-            self.isRecording = false
+            self.viewComponentState = .pending
             self.recordingSession = nil
         }
         

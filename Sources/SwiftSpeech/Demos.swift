@@ -135,16 +135,17 @@ public extension SwiftSpeech.Demos {
                     ForEach(viewModel.list, id: \.text) { pair in
                         Text(pair.text)
                     }
-                }
-                .overlay(
+                }.overlay(
                     SwiftSpeech.RecordButton()
-                        .swiftSpeechRecordOnHold(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
-                        .onStartRecording(appendAction: self.viewModel.recordingDidStart(session:))
+                        .swiftSpeechRecordOnHold(
+                            locale: self.locale,
+                            animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0),
+                            distanceToCancel: 100.0
+                        ).onStartRecording(appendAction: self.viewModel.recordingDidStart(session:))
                         .onCancelRecording(appendAction: self.viewModel.recordingDidCancel(session:))
                         .padding(20),
                     alignment: .bottom
-                )
-                .navigationBarTitle(Text("SwiftSpeech"))
+                ).navigationBarTitle(Text("SwiftSpeech"))
 
             }.automaticEnvironmentForSpeechRecognition()
         }
