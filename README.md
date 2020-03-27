@@ -133,7 +133,7 @@ But frankly, this is more of a shortcut for playing/testing since many apps have
 .onCancelRecording(appendAction: (SwiftSpeech.Session) -> Void)
 ```
 
-The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/canceled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
+The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/cancelled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
 
 ```swift
 // 3
@@ -144,7 +144,7 @@ The second kind gives you utter control over the whole lifespan of a `SwiftSpeec
 .onCancelRecording(sendSessionTo: Subject)
 ```
 
-The third kind might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/canceled.
+The third kind might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/cancelled.
 
 ## SwiftSpeech.Session
 ### Inside SwiftSpeech's Session Handler

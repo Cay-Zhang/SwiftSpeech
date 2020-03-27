@@ -134,7 +134,7 @@ public class SpeechRecognizer {
         
         
         // Create a recognition task for the speech recognition session.
-        // Keep a reference to the task so that it can be canceled.
+        // Keep a reference to the task so that it can be cancelled.
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
             if let result = result {
