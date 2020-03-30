@@ -1,5 +1,5 @@
 //
-//  RecordOnHold.swift
+//  ViewModifiers.swift
 //  
 //
 //  Created by Cay Zhang on 2020/2/16.
@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+// MARK: - Functional Components
 public extension SwiftSpeech.ViewModifiers {
     
     struct RecordOnHold : ViewModifier {
@@ -97,10 +98,72 @@ public extension SwiftSpeech.ViewModifiers {
         
     }
     
-
+    /**
+     `viewComponentState` will never be `.cancelling` here.
+     */
+    struct ToggleRecordingOnTap : ViewModifier {
+        
+        public init(locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.defaultAnimation) {
+            self.locale = locale
+            self.animation = animation
+        }
+        
+        var locale: Locale
+        var animation: Animation
+        
+        @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+        @State var recordingSession: SwiftSpeech.Session? = nil
+        @State var viewComponentState: SwiftSpeech.State = .pending
+        
+        @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
+        @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
+        
+        var gesture: some Gesture {
+            TapGesture()
+                .onEnded {
+                    withAnimation(self.animation) {
+                        if self.viewComponentState == .pending {  // if not recording
+                            self.startRecording()
+                        } else {  // if recording
+                            self.endRecording()
+                        }
+                    }
+                }
+        }
+        
+        public func body(content: Content) -> some View {
+            content
+                .gesture(gesture, including: isSpeechRecognitionAvailable ? .gesture : .none)
+                .environment(\.swiftSpeechState, viewComponentState)
+        }
+        
+        fileprivate func startRecording() {
+            let id = SpeechRecognizer.ID()
+            let session = SwiftSpeech.Session(id: id, locale: self.locale)
+            // View update
+            self.viewComponentState = .recording
+            self.recordingSession = session
+            try! session.startRecording()
+            for action in actionsOnStartRecording {
+                action(session)
+            }
+        }
+        
+        fileprivate func endRecording() {
+            guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
+            recordingSession?.stopRecording()
+            for action in actionsOnStopRecording {
+                action(session)
+            }
+            self.viewComponentState = .pending
+            self.recordingSession = nil
+        }
+        
+    }
     
 }
 
+// MARK: - SwiftSpeech Modifiers
 public extension SwiftSpeech.ViewModifiers {
     
     struct OnRecognize : ViewModifier {

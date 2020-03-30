@@ -81,7 +81,13 @@ public extension View {
                 distanceToCancel: distanceToCancel
             )
         )
-        
+    }
+    
+    func swiftSpeechToggleRecordingOnTap(
+        locale: Locale = .autoupdatingCurrent,
+        animation: Animation = SwiftSpeech.defaultAnimation
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.ToggleRecordingOnTap> {
+        self.modifier(SwiftSpeech.ViewModifiers.ToggleRecordingOnTap(locale: locale, animation: animation))
     }
     
     func onRecognize(_ textHandler: @escaping (String) -> Void) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {

@@ -15,7 +15,7 @@ public extension SwiftSpeech.Demos {
         
         var locale: Locale
         
-        @State private var text = "Hold to Speak"
+        @State private var text = "Tap to Speak"
         
         public init(locale: Locale = .autoupdatingCurrent) {
             self.locale = locale
@@ -30,7 +30,7 @@ public extension SwiftSpeech.Demos {
                 Text(text)
                     .font(.system(size: 25, weight: .bold, design: .default))
                 SwiftSpeech.RecordButton()
-                    .swiftSpeechRecordOnHold(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                    .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
                     .onRecognize(update: $text)
                 
             }.automaticEnvironmentForSpeechRecognition()
@@ -40,7 +40,7 @@ public extension SwiftSpeech.Demos {
     
     struct Colors : View {
 
-        @State private var text = "Say a Color!"
+        @State private var text = "Hold and say a color!"
 
         static let colorDictionary: [String : Color] = [
             "black": .black,
@@ -71,6 +71,7 @@ public extension SwiftSpeech.Demos {
                     .font(.system(size: 25, weight: .bold, design: .default))
                     .foregroundColor(color)
                 SwiftSpeech.RecordButton()
+                    .accentColor(color)
                     .swiftSpeechRecordOnHold(locale: Locale(identifier: "en_US"), animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
                     .onRecognize(update: $text)
             }.automaticEnvironmentForSpeechRecognition()
