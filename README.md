@@ -17,7 +17,7 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [SwiftSpeech.Session](#swiftspeech.session)
+- [SwiftSpeech.Session](#swiftspeechsession)
 - [Customized View Components](#customized-view-components)
 - [Customized Functional Components](#customized-functional-components)
 - [License](#license)
@@ -26,9 +26,10 @@
 **SwiftSpeech** is a wrapper for Apple's **Speech** framework with deep **SwiftUI** and **Combine** integration.
 
 - [x] UI control + speech recognition functionality in just several lines of code.
+- [x] Customizable cancelling.
 - [x] SwiftUI style reactive APIs and Combine support.
-- [x] Highly customizable but also keeping your code highly resuable via a composable structure.
-- [x] Fully open low level APIs.
+- [x] Highly customizable but also keeping your code highly reusable via a composable structure.
+- [x] Fully open low-level APIs.w
 
 ## Installation
 SwiftSpeech is available through Swift Package Manager. To use it, add a package dependency using URL:
@@ -105,12 +106,12 @@ SwiftSpeech.RecordButton()                       // 1. The View Component
 ```
 There are three parts here (and luckily, you can customize every one of them!):
 1. **The View Component**: A `View` that is only responsible for UI.
-2. **The Functional Component**: A component that provides the essential funtionality of speech recognition. The two arguments let you specify a locale (language) for recognition and an animation used when user interacts with the View Component.
+2. **The Functional Component**: A component that provides the essential functionality of speech recognition. The two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the View Component.
 3. **SwiftSpeech Modifier(s)**: One or more components allowing you to receive and manipulate the recognition results. They can be stacked together to create powerful effects.
 
 For now, you can just use the built-in View Component and Functional Component. Let's explore some **SwiftSpeech Modifiers** first since every app handles its data differently:
 
-**Important: Chaining multiple or identical SwiftSpeech Modifiers together doesn't override any behavior. All actions of the modifiers will be excuted in the order where the closest to the Functional Component excutes first and the farest excutes last.**
+**Important: Chaining multiple or identical SwiftSpeech Modifiers together doesn't override any behavior. All actions of the modifiers will be executed in the order where the closest to the Functional Component executes first and the farthest executes last.**
 
 ```swift
 // 1
@@ -133,7 +134,7 @@ But frankly, this is more of a shortcut for playing/testing since many apps have
 .onCancelRecording(appendAction: (SwiftSpeech.Session) -> Void)
 ```
 
-The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/cancelled. Inside the closures, you will have aceess to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
+The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/cancelled. Inside the closures, you will have access to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
 
 ```swift
 // 3
@@ -148,7 +149,7 @@ The third kind might be useful if you prefer a reactive programming style. The o
 
 ## SwiftSpeech.Session
 ### Inside SwiftSpeech's Session Handler
-If you are filling in a `(Session) -> Void` handler provided by the framework, use the publishers provided by the `Session` to receive updates on recogniton results.
+If you are filling in a `(Session) -> Void` handler provided by the framework, use the publishers provided by the `Session` to receive updates on recognition results.
 
 Currently, a `Session` has two publishers (you only need to subscribe to one of them): `stringPublisher` and `resultPublisher`.
 
@@ -178,10 +179,10 @@ For more, please refer to the documentation of `SwiftSpeech.Session`.
 
 ## Customized View Components
 🚧 Documentation still in making... Give me a star to keep me motivated!
-For now, please refer to the source code of the demos provided by the framework for examples.
+For now, please refer to the source code of the demos provided by the framework for example.
 ## Customized Functional Components
 🚧 Documentation still in making... Give me a star to keep me motivated!
-For now, please refer to the source code of the demos provided by the framework for examples.
+For now, please refer to the source code of the demos provided by the framework for example.
 
 ## License
 SwiftSpeech is available under the [MIT license](https://choosealicense.com/licenses/mit/).
