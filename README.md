@@ -100,13 +100,13 @@ Knowing what this framework can do, you can now start to learn about the concept
 
 Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is this:
 ```swift
-SwiftSpeech.RecordButton()                       // 1. The View Component
-    .swiftSpeechRecordOnHold(locale:animation:)  // 2. The Functional Component
-    .onRecognize(update: $text)                  // 3. SwiftSpeech Modifier(s)
+SwiftSpeech.RecordButton()                                        // 1. The View Component
+    .swiftSpeechRecordOnHold(locale:animation:distanceToCancel:)  // 2. The Functional Component
+    .onRecognize(update: $text)                                   // 3. SwiftSpeech Modifier(s)
 ```
 There are three parts here (and luckily, you can customize every one of them!):
 1. **The View Component**: A `View` that is only responsible for UI.
-2. **The Functional Component**: A component that provides the essential functionality of speech recognition. The two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the View Component.
+2. **The Functional Component**: A component that handles user interaction and provides the essential functionality of speech recognition. In the built-in one here, the first two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the View Component. The third argument sets the distance the user has to swipe up in order to cancel the recording.
 3. **SwiftSpeech Modifier(s)**: One or more components allowing you to receive and manipulate the recognition results. They can be stacked together to create powerful effects.
 
 For now, you can just use the built-in View Component and Functional Component. Let's explore some **SwiftSpeech Modifiers** first since every app handles its data differently:
@@ -178,8 +178,32 @@ session.stringPublisher?
 For more, please refer to the documentation of `SwiftSpeech.Session`.
 
 ## Customized View Components
-🚧 Documentation still in making... Give me a star to keep me motivated!
-For now, please refer to the source code of the demos provided by the framework for example.
+A **View Component** is a dedicated `View` for design. It does not react to user interaction directly, but instead reacts to its environments, allowing developers to only focus on the view design and making the view more composable. User interactions are handled by the **Functional Component**.
+
+Inspect the source code of `SwiftSpeech.RecordButton` (again, it's not a `Button` since it doesn't respond to user interaction). You will notice that it doesn't own any state or apply any gestures. It only responds to the two environments below.
+
+```swift
+@Environment(\.swiftSpeechState) var state: SwiftSpeech.State
+@Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+```
+
+Both are pretty self-explanatory: the first one represents its current state of recording, and the second one indicates the availability of speech recognition.
+
+Here are more details of `SwiftSpeech.State`:
+
+```swift
+enum SwiftSpeech.State {
+    /// Indicating there is no recording in progress.
+    /// - Note: It's the default value for `@Environment(\.swiftSpeechState)`.
+    case pending
+    /// Indicating there is a recording in progress and the user does not intend to cancel it.
+    case recording
+    /// Indicating there is a recording in progress and the user intends to cancel it.
+    case cancelling
+}
+```
+
+Combined with a **Functional Component** and some **SwiftSpeech Modifiers**, hopefully, you can build your own fancy record systems now!
 ## Customized Functional Components
 🚧 Documentation still in making... Give me a star to keep me motivated!
 For now, please refer to the source code of the demos provided by the framework for example.

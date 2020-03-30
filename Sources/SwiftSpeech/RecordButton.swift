@@ -9,8 +9,19 @@ import SwiftUI
 import Combine
 
 public extension SwiftSpeech {
+    /**
+     An enumeration representing the state of recording. Typically used by a **View Component** and set by a **Functional Component**.
+     - Note: The availability of speech recognition cannot be determined using the `State`
+             and should be attained using `@Environment(\.isSpeechRecognitionAvailable)`.
+     */
     enum State {
-        case pending, recording, cancelling
+        /// Indicating there is no recording in progress.
+        /// - Note: It's the default value for `@Environment(\.swiftSpeechState)`.
+        case pending
+        /// Indicating there is a recording in progress and the user does not intend to cancel it.
+        case recording
+        /// Indicating there is a recording in progress and the user intends to cancel it.
+        case cancelling
     }
 }
 
