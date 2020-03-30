@@ -106,7 +106,7 @@ SwiftSpeech.RecordButton()                                        // 1. The View
 ```
 There are three parts here (and luckily, you can customize every one of them!):
 1. **The View Component**: A `View` that is only responsible for UI.
-2. **The Functional Component**: A component that handles user interaction and provides the essential functionality of speech recognition. In the built-in one here, the first two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the View Component. The third argument sets the distance the user has to swipe up in order to cancel the recording.
+2. **The Functional Component**: A component that handles user interaction and provides the essential functionality of speech recognition. In the built-in one here, the first two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the **View Component**. The third argument sets the distance the user has to swipe up in order to cancel the recording. The framework also provides another **Functional Component**: `.swiftSpeechToggleRecordingOnTap(locale:animation:)`.
 3. **SwiftSpeech Modifier(s)**: One or more components allowing you to receive and manipulate the recognition results. They can be stacked together to create powerful effects.
 
 For now, you can just use the built-in View Component and Functional Component. Let's explore some **SwiftSpeech Modifiers** first since every app handles its data differently:
