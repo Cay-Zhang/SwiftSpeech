@@ -10,57 +10,60 @@ import Combine
 import Speech
 
 public extension View {
-    func onStartRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+    func onStartRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) ->
+        ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(_ session: SwiftSpeech.Session) -> Void]>> {
         self.transformEnvironment(\.actionsOnStartRecording) { actions in
             actions.insert(actionToAppend, at: 0)
-        }
+        } as! ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>>
     }
     
-    func onStopRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+    func onStopRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) ->
+        ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(_ session: SwiftSpeech.Session) -> Void]>> {
         self.transformEnvironment(\.actionsOnStopRecording) { actions in
             actions.insert(actionToAppend, at: 0)
-        }
+        } as! ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>>
     }
     
-    func onCancelRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) -> some View {
+    func onCancelRecording(appendAction actionToAppend: @escaping (_ session: SwiftSpeech.Session) -> Void) ->
+        ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(_ session: SwiftSpeech.Session) -> Void]>> {
         self.transformEnvironment(\.actionsOnCancelRecording) { actions in
             actions.insert(actionToAppend, at: 0)
-        }
+        } as! ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>>
     }
 }
 
 public extension View {
-    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session {
         self.onStartRecording { session in
             subject.send(session)
         }
     }
     
-    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+    func onStartRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session? {
         self.onStartRecording { session in
             subject.send(session)
         }
     }
     
-    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session {
         self.onStopRecording { session in
             subject.send(session)
         }
     }
     
-    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+    func onStopRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session? {
         self.onStopRecording { session in
             subject.send(session)
         }
     }
     
-    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session {
+    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session {
         self.onCancelRecording { session in
             subject.send(session)
         }
     }
     
-    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> some View where S.Output == SwiftSpeech.Session? {
+    func onCancelRecording<S: Subject>(sendSessionTo subject: S) -> ModifiedContent<Self, _EnvironmentKeyTransformModifier<[(SwiftSpeech.Session) -> Void]>> where S.Output == SwiftSpeech.Session? {
         self.onCancelRecording { session in
             subject.send(session)
         }
