@@ -1,8 +1,39 @@
-# SwiftSpeech
+<style type='text/css'>
+#container {
+  height: 125px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+#icon {
+  width: 125px;
+  height: 125px;
+  margin: 20px;
+}
+#title {
+  text-align: center;
+  margin: 20px;
+}
+p.title {
+  font-size: 48px;
+  line-height: 1.08365;
+  font-weight: 600;
+  letter-spacing: -0.003em;
+  font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+</style>
+<div id="container">
+  <div id="icon">
+    <a href="https://sm.ms/image/pYZ3vzNB9jq7xfC" target="_blank"><img src="https://i.loli.net/2020/04/02/pYZ3vzNB9jq7xfC.png" width="125" height="125"></a>
+  </div>
+  <div id="title">
+    <p class="title">SwiftSpeech</p>
+    <p>Speech Recognition Made Simple</p>
+  </div>
+</div>
 
-**Speech Recognition Made Simple**
-
-<p>
+<p align=center>
 <a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
 <a href="https://developer.apple.com/ios"><img src="https://img.shields.io/badge/iOS-13%2B-blue"></a>
 <a href="https://github.com/apple/swift-package-manager"><img src="https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat"></a>
