@@ -1,7 +1,7 @@
 <div align=center>
 <img src="https://i.loli.net/2020/04/02/pYZ3vzNB9jq7xfC.png" width="125" height="125" align=center>
 </div>
-<p style="font-size: 48px" align=center>SwiftSpeech</p>
+<h1 align=center>SwiftSpeech</h1>
 <h3 align=center>Speech Recognition Made Simple</h3>
 
 <p align=center>
