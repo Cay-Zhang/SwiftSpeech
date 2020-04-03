@@ -1,5 +1,5 @@
 <div align=center>
-<img src="https://i.loli.net/2020/04/02/pYZ3vzNB9jq7xfC.png" width="125" height="125" align=center>
+<img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Icon.png?raw=true" width="180" height="180" align=center>
 </div>
 <h1 align=center>SwiftSpeech</h1>
 <h3 align=center>Speech Recognition Made Simple</h3>
@@ -8,7 +8,6 @@
 <a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
 <a href="https://developer.apple.com/ios"><img src="https://img.shields.io/badge/iOS-13%2B-blue"></a>
 <a href="https://github.com/apple/swift-package-manager"><img src="https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat"></a>
-<a href="https://codebeat.co/projects/github-com-cay-zhang-swiftspeech-master"><img alt="codebeat badge" src="https://codebeat.co/badges/7151eef2-438b-4428-99cd-776961dcf8ab" /></a>
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
