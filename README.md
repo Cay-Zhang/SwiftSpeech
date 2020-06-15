@@ -30,7 +30,7 @@
 - [x] Customizable cancelling.
 - [x] SwiftUI style reactive APIs and Combine support.
 - [x] Highly customizable but also keeping your code highly reusable via a composable structure.
-- [x] Fully open low-level APIs.w
+- [x] Fully open low-level APIs.
 
 ## Installation
 SwiftSpeech is available through Swift Package Manager. To use it, add a package dependency using URL:
