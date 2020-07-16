@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Speech
 
 // MARK: - Functional Components
 public extension SwiftSpeech.ViewModifiers {
@@ -168,23 +169,66 @@ public extension SwiftSpeech.ViewModifiers {
     
     struct OnRecognize : ViewModifier {
         
-        let textHandler: (String) -> Void
+        @State var model: Model
         
-        @State private var sessionSubject = CurrentValueSubject<SwiftSpeech.Session?, Never>(nil)
+        init(isPartialResultIncluded: Bool, textHandler: @escaping (String) -> Void) {
+            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, textHandler: textHandler))
+        }
         
-        var publisher: AnyPublisher<String, Never> {
-            sessionSubject
-                .compactMap { $0?.stringPublisher }
-                .switchToLatest()
-                .eraseToAnyPublisher()
+        init(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
+            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler))
         }
         
         public func body(content: Content) -> some View {
             content
-                .onStartRecording(sendSessionTo: sessionSubject)
-                .onReceive(self.publisher) { string in
-                    self.textHandler(string)
+                .onStartRecording(sendSessionTo: model.sessionSubject)
+                .onCancelRecording(sendSessionTo: model.cancelSubject)
+        }
+        
+        class Model {
+            let sessionSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
+            let cancelSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
+            let resultHandler: (Result<SFSpeechRecognitionResult, Error>) -> Void
+            var cancelBag = Set<AnyCancellable>()
+            
+            init(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
+                self.resultHandler = resultHandler
+                self.subscribe(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler)
+            }
+
+            init(isPartialResultIncluded: Bool, textHandler: @escaping (String) -> Void) {
+                self.resultHandler = { result in
+                    if let result = try? result.get() {
+                        textHandler(result.bestTranscription.formattedString)
+                    }
                 }
+                self.subscribe(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler)
+            }
+            
+            func subscribe(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
+                sessionSubject
+                    .compactMap { (session: SwiftSpeech.Session) -> AnyPublisher<Result<SFSpeechRecognitionResult, Error>, Never>? in
+                        session.resultPublisher?
+                            .filter { result in
+                                if isPartialResultIncluded {
+                                    return true
+                                } else if let recognitionResult = try? result.get() {
+                                    return recognitionResult.isFinal
+                                } else {
+                                    return false
+                                }
+                            }
+                            .eraseToAnyPublisher()
+                    }
+                    .merge(with:
+                        cancelSubject
+                            .map { _ in Empty<Result<SFSpeechRecognitionResult, Error>, Never>(completeImmediately: true).eraseToAnyPublisher() }
+                    )
+                    .switchToLatest()
+                    .sink(receiveValue: resultHandler)
+                    .store(in: &cancelBag)
+            }
+            
         }
         
     }
