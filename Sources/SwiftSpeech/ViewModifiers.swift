@@ -198,12 +198,11 @@ public extension SwiftSpeech.ViewModifiers {
         
         @State var model: Model
         
-        init(isPartialResultIncluded: Bool, textHandler: @escaping (String) -> Void) {
-            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, textHandler: textHandler))
-        }
-        
-        init(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
-            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler))
+        init(isPartialResultIncluded: Bool,
+             resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+             errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
+        ) {
+            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler, errorHandler: errorHandler))
         }
         
         public func body(content: Content) -> some View {
@@ -215,45 +214,33 @@ public extension SwiftSpeech.ViewModifiers {
         class Model {
             let sessionSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
             let cancelSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
-            let resultHandler: (Result<SFSpeechRecognitionResult, Error>) -> Void
             var cancelBag = Set<AnyCancellable>()
             
-            init(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
-                self.resultHandler = resultHandler
-                self.subscribe(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler)
-            }
-
-            init(isPartialResultIncluded: Bool, textHandler: @escaping (String) -> Void) {
-                self.resultHandler = { result in
-                    if let result = try? result.get() {
-                        textHandler(result.bestTranscription.formattedString)
-                    }
-                }
-                self.subscribe(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler)
-            }
-            
-            func subscribe(isPartialResultIncluded: Bool, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) {
+            init(
+                isPartialResultIncluded: Bool,
+                resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+                errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
+            ) {
                 sessionSubject
-                    .compactMap { (session: SwiftSpeech.Session) -> AnyPublisher<Result<SFSpeechRecognitionResult, Error>, Never>? in
+                    .compactMap { (session: SwiftSpeech.Session) -> AnyPublisher<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>? in
                         session.resultPublisher?
                             .filter { result in
-                                if isPartialResultIncluded {
-                                    return true
-                                } else if let recognitionResult = try? result.get() {
-                                    return recognitionResult.isFinal
-                                } else {
-                                    return false
-                                }
-                            }
+                                isPartialResultIncluded ? true : (result.isFinal)
+                            }.catch { (error: Error) -> Empty<SFSpeechRecognitionResult, Never> in
+                                errorHandler(session, error)
+                                return Empty(completeImmediately: true)
+                            }.map { (session, $0) }
                             .eraseToAnyPublisher()
                     }
                     .merge(with:
                         cancelSubject
-                            .map { _ in Empty<Result<SFSpeechRecognitionResult, Error>, Never>(completeImmediately: true).eraseToAnyPublisher() }
+                            .map { _ in Empty<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>(completeImmediately: true).eraseToAnyPublisher() }
                     )
                     .switchToLatest()
-                    .sink(receiveValue: resultHandler)
-                    .store(in: &cancelBag)
+                    .sink { tuple in
+                        let (session, result) = tuple
+                        resultHandler(session, result)
+                    }.store(in: &cancelBag)
             }
             
         }

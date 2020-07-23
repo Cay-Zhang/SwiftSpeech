@@ -93,24 +93,47 @@ public extension View {
         self.modifier(SwiftSpeech.ViewModifiers.ToggleRecordingOnTap(locale: locale, animation: animation))
     }
     
-    func onRecognize(includePartialResults: Bool = true, textHandler: @escaping (String) -> Void) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.modifier(SwiftSpeech.ViewModifiers.OnRecognize(isPartialResultIncluded: includePartialResults, textHandler: textHandler))
+    func onRecognize(
+        includePartialResults isPartialResultIncluded: Bool = true,
+        handleResult resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+        handleError errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void = { _, _ in }
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        modifier(
+            SwiftSpeech.ViewModifiers.OnRecognize(
+                isPartialResultIncluded: isPartialResultIncluded,
+                resultHandler: resultHandler,
+                errorHandler: errorHandler
+            )
+        )
     }
     
-    func onRecognize(includePartialResults: Bool = true, resultHandler: @escaping (Result<SFSpeechRecognitionResult, Error>) -> Void) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.modifier(SwiftSpeech.ViewModifiers.OnRecognize(isPartialResultIncluded: includePartialResults, resultHandler: resultHandler))
+    func onRecognize(
+        includePartialResults isPartialResultIncluded: Bool = true,
+        handleResult resultHandler: @escaping (SFSpeechRecognitionResult) -> Void,
+        handleError errorHandler: @escaping (Error) -> Void = { _ in }
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        onRecognize(
+            includePartialResults: isPartialResultIncluded,
+            handleResult: { _, result in resultHandler(result) },
+            handleError: { _, error in errorHandler(error) }
+        )
     }
     
-    func onRecognize(includePartialResults: Bool = true, update textBinding: Binding<String>) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.onRecognize(includePartialResults: includePartialResults) { (text: String) -> Void in
-            textBinding.wrappedValue = text
-        }
+    func onRecognize(
+        includePartialResults isPartialResultIncluded: Bool = true,
+        update textBinding: Binding<String>
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        self.onRecognize(includePartialResults: isPartialResultIncluded) { result in
+            textBinding.wrappedValue = result.bestTranscription.formattedString
+        } handleError: { _ in }
     }
     
-    func printRecognizedText() -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.onRecognize { (text: String) -> Void in
-            print("[SwiftSpeech] Recognized Text: \(text)")
-        }
+    func printRecognizedText(
+        includePartialResults isPartialResultIncluded: Bool = true
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        self.onRecognize(includePartialResults: isPartialResultIncluded) { result in
+            print("[SwiftSpeech] Recognized Text: \(result.bestTranscription.formattedString)")
+        } handleError: { _ in }
     }
 }
 

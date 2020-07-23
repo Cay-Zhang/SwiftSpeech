@@ -86,46 +86,9 @@ public extension SwiftSpeech.Demos {
     struct List : View {
 
         var locale: Locale
-
-        @ObservedObject var viewModel = ViewModel()
-
-        class ViewModel: ObservableObject {
-            @Published var list: [(id: SpeechRecognizer.ID, text: String)] = []
-            var cancelBag = Set<AnyCancellable>()
-
-            func recordingDidStart(session: SwiftSpeech.Session) {
-                guard let publisher = session.resultPublisher else { return }
-                let id = session.id
-                self.list.append((id: id, text: ""))
-                publisher
-                    .map { (result) -> String? in
-                        let newResult = result.map { (recognitionResult) -> String in
-                            let string: String = recognitionResult.bestTranscription.formattedString
-                            return recognitionResult.isFinal ? string : "\(string) ..."
-                        }
-                        return try? newResult.get()
-                    }
-                    .sink { [unowned self, id] string in
-                        // find the index of the session
-                        if let index = self.list.firstIndex(where: { pair in pair.id == id }) {
-                            if let recognizedText = string {
-                                self.list[index].text = recognizedText
-                            } else {
-                                // if error occurs, remove this session from the list
-                                self.list.remove(at: index)
-                            }
-                        }
-                    }
-                    .store(in: &self.cancelBag)
-            }
-
-            func recordingDidCancel(session: SwiftSpeech.Session) {
-                guard let index = self.list.firstIndex(where: { pair in pair.id == session.id }) else { return }
-                self.list.remove(at: index)
-            }
-
-        }
-
+        
+        @State var list: [(session: SwiftSpeech.Session, text: String)] = []
+        
         public init(locale: Locale = .autoupdatingCurrent) {
             self.locale = locale
         }
@@ -137,7 +100,7 @@ public extension SwiftSpeech.Demos {
         public var body: some View {
             NavigationView {
                 SwiftUI.List {
-                    ForEach(viewModel.list, id: \.text) { pair in
+                    ForEach(list, id: \.session.id) { pair in
                         Text(pair.text)
                     }
                 }.overlay(
@@ -146,8 +109,17 @@ public extension SwiftSpeech.Demos {
                             locale: self.locale,
                             animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0),
                             distanceToCancel: 100.0
-                        ).onStartRecording(appendAction: self.viewModel.recordingDidStart(session:))
-                        .onCancelRecording(appendAction: self.viewModel.recordingDidCancel(session:))
+                        ).onStartRecording { session in
+                            list.append((session, ""))
+                        }.onCancelRecording { session in
+                            _ = list.firstIndex { $0.session.id == session.id }
+                                .map { list.remove(at: $0) }
+                        }.onRecognize(includePartialResults: true) { session, result in
+                            list.firstIndex { $0.session.id == session.id }
+                                .map { index in
+                                    list[index].text = result.bestTranscription.formattedString + (result.isFinal ? "" : "...")
+                                }
+                        } handleError: { _, _ in }
                         .padding(20),
                     alignment: .bottom
                 ).navigationBarTitle(Text("SwiftSpeech"))

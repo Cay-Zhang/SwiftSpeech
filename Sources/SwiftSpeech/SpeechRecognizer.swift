@@ -78,34 +78,17 @@ public class SpeechRecognizer {
     private var recognitionTask: SFSpeechRecognitionTask?
     
     private let audioEngine = AVAudioEngine()
- 
-    private let resultSubject: PassthroughSubject<Result<SFSpeechRecognitionResult, Error>, Never> = PassthroughSubject()
     
-    /// A publisher that emits the SFSpeechRecognitionResult sent by the recognizer wrapped in a Swift Result.
-    public var resultPublisher: AnyPublisher<Result<SFSpeechRecognitionResult, Error>, Never> {
-        resultSubject
-            .eraseToAnyPublisher()
+    private let resultSubject = PassthroughSubject<SFSpeechRecognitionResult, Error>()
+    
+    public var resultPublisher: AnyPublisher<SFSpeechRecognitionResult, Error> {
+        resultSubject.eraseToAnyPublisher()
     }
     
-    /// A convenience publisher that emits the vocal string recognized.
-    public var stringPublisher: AnyPublisher<String, Never> {
+    /// A convenience publisher that emits `result.bestTranscription.formattedString`.
+    public var stringPublisher: AnyPublisher<String, Error> {
         resultSubject
-            .compactMap { result -> String? in
-                
-                switch result {
-                case let .success(result):
-                    // if result.isFinal {
-                    //     self.stopRecording()
-                    // }
-                    return result.bestTranscription.formattedString
-                case let .failure(error):
-                    // recording already stopped at this point
-                    print(error)
-                    
-                    return nil
-                }
-                
-            }
+            .map(\.bestTranscription.formattedString)
             .eraseToAnyPublisher()
     }
     
@@ -132,21 +115,19 @@ public class SpeechRecognizer {
         // Keep speech recognition data on device
         recognitionRequest.requiresOnDeviceRecognition = false
         
-        
         // Create a recognition task for the speech recognition session.
         // Keep a reference to the task so that it can be cancelled.
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
             if let result = result {
-                self.resultSubject.send(.success(result))
+                self.resultSubject.send(result)
                 if result.isFinal {
                     self.resultSubject.send(completion: .finished)
                     SpeechRecognizer.remove(id: self.id)
                 }
             } else if let error = error {
                 self.stopRecording()
-                self.resultSubject.send(.failure(error))
-                self.resultSubject.send(completion: .finished)
+                self.resultSubject.send(completion: .failure(error))
                 SpeechRecognizer.remove(id: self.id)
             } else {
                 fatalError("No result and no error")
