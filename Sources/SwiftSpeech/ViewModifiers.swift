@@ -60,7 +60,9 @@ public extension SwiftSpeech.ViewModifiers {
         var animation: Animation
         var distanceToCancel: CGFloat
         
-        @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+        @SpeechRecognitionAuthStatus var authStatus
+        
+
         @State var recordingSession: SwiftSpeech.Session? = nil
         @State var viewComponentState: SwiftSpeech.State = .pending
         
@@ -95,7 +97,7 @@ public extension SwiftSpeech.ViewModifiers {
         
         public func body(content: Content) -> some View {
             content
-                .gesture(gesture, including: isSpeechRecognitionAvailable ? .gesture : .none)
+                .gesture(gesture, including: $authStatus ? .gesture : .none)
                 .environment(\.swiftSpeechState, viewComponentState)
         }
         
@@ -140,7 +142,9 @@ public extension SwiftSpeech.ViewModifiers {
         var locale: Locale
         var animation: Animation
         
-        @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+        @SpeechRecognitionAuthStatus var authStatus
+        
+
         @State var recordingSession: SwiftSpeech.Session? = nil
         @State var viewComponentState: SwiftSpeech.State = .pending
         
@@ -161,7 +165,7 @@ public extension SwiftSpeech.ViewModifiers {
         
         public func body(content: Content) -> some View {
             content
-                .gesture(gesture, including: isSpeechRecognitionAvailable ? .gesture : .none)
+                .gesture(gesture, including: $authStatus ? .gesture : .none)
                 .environment(\.swiftSpeechState, viewComponentState)
         }
         

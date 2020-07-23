@@ -31,4 +31,14 @@ struct LibraryContent: LibraryContentProvider {
             title: "Demos - List"
         )
     }
+    
+    @LibraryContentBuilder
+    func modifiers(base: AnyView) -> [LibraryItem] {
+        LibraryItem(
+            base.onAppear {
+                SwiftSpeech.requestSpeechRecognitionAuthorization()
+            },
+            title: "Request Speech Recognition Authorization on Appear"
+        )
+    }
 }

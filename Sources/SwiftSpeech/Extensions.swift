@@ -114,15 +114,6 @@ public extension View {
     }
 }
 
-public extension View {
-    /// Returns a view wrapping self that automatically requests speech recognition authorization on appear and sets the corresponding environment value.
-    /// Add this after your root view or the view you want to use speech recognition in.
-    /// Currently, it only sets up the `isSpeechRecognitionAvailable` environment for the view.
-    func automaticEnvironmentForSpeechRecognition() -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.AutomaticEnvironmentForSpeechRecognition> {
-        ModifiedContent(content: self, modifier: SwiftSpeech.ViewModifiers.AutomaticEnvironmentForSpeechRecognition())
-    }
-}
-
 public extension Subject where Output == SpeechRecognizer.ID?, Failure == Never {
     
     func mapResolved<T>(_ transform: @escaping (SpeechRecognizer) -> T) -> Publishers.CompactMap<Self, T> {

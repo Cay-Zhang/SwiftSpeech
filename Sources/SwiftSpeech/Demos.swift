@@ -33,7 +33,9 @@ public extension SwiftSpeech.Demos {
                     .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
                     .onRecognize(update: $text)
                 
-            }.automaticEnvironmentForSpeechRecognition()
+            }.onAppear {
+                SwiftSpeech.requestSpeechRecognitionAuthorization()
+            }
         }
         
     }
@@ -74,7 +76,9 @@ public extension SwiftSpeech.Demos {
                     .accentColor(color)
                     .swiftSpeechRecordOnHold(locale: Locale(identifier: "en_US"), animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
                     .onRecognize(update: $text)
-            }.automaticEnvironmentForSpeechRecognition()
+            }.onAppear {
+                SwiftSpeech.requestSpeechRecognitionAuthorization()
+            }
         }
 
     }
@@ -148,7 +152,9 @@ public extension SwiftSpeech.Demos {
                     alignment: .bottom
                 ).navigationBarTitle(Text("SwiftSpeech"))
 
-            }.automaticEnvironmentForSpeechRecognition()
+            }.onAppear {
+                SwiftSpeech.requestSpeechRecognitionAuthorization()
+            }
         }
     }
 }

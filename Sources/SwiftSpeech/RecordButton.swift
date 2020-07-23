@@ -29,7 +29,7 @@ public extension SwiftSpeech {
     struct RecordButton : View {
         
         @Environment(\.swiftSpeechState) var state: SwiftSpeech.State
-        @Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+        @SpeechRecognitionAuthStatus var authStatus
         
         public init() { }
         
@@ -61,7 +61,7 @@ public extension SwiftSpeech {
                 backgroundColor
                     .animation(.easeOut(duration: 0.2))
                     .clipShape(Circle())
-                    .environment(\.isEnabled, isSpeechRecognitionAvailable)  // When isEnabled is false, the accent color is gray and all user interactions are disabled inside the view.
+                    .environment(\.isEnabled, $authStatus)  // When isEnabled is false, the accent color is gray and all user interactions are disabled inside the view.
                     .zIndex(0)
                 
                 Image(systemName: state != .cancelling ? "waveform" : "xmark")

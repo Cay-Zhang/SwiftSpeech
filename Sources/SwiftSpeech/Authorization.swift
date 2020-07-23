@@ -31,14 +31,22 @@ extension SwiftSpeech {
     }
 }
 
-@propertyWrapper public struct SpeechRecognitionAvailability: DynamicProperty {
+@propertyWrapper public struct SpeechRecognitionAuthStatus: DynamicProperty {
     @ObservedObject var authCenter = SwiftSpeech.AuthorizationCenter.shared
+    
+    let trueValues: Set<SFSpeechRecognizerAuthorizationStatus>
     
     public var wrappedValue: SFSpeechRecognizerAuthorizationStatus {
         SwiftSpeech.AuthorizationCenter.shared.speechRecognitionAuthorizationStatus
     }
     
-    public init() { }
+    public init(trueValues: Set<SFSpeechRecognizerAuthorizationStatus> = [.authorized]) {
+        self.trueValues = trueValues
+    }
+    
+    public var projectedValue: Bool {
+        self.trueValues.contains(SwiftSpeech.AuthorizationCenter.shared.speechRecognitionAuthorizationStatus)
+    }
 }
 
 extension SFSpeechRecognizerAuthorizationStatus: CustomStringConvertible {
