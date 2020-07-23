@@ -9,6 +9,42 @@ import SwiftUI
 import Combine
 import Speech
 
+public extension SwiftSpeech {
+    struct FunctionalComponentDelegate: DynamicProperty {
+        
+        @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
+        @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
+        @Environment(\.actionsOnCancelRecording) var actionsOnCancelRecording
+        
+        public init() { }
+        
+        mutating public func update() {
+            _actionsOnStartRecording.update()
+            _actionsOnStopRecording.update()
+            _actionsOnCancelRecording.update()
+        }
+        
+        public func onStartRecording(session: SwiftSpeech.Session) {
+            for action in actionsOnStartRecording {
+                action(session)
+            }
+        }
+        
+        public func onStopRecording(session: SwiftSpeech.Session) {
+            for action in actionsOnStopRecording {
+                action(session)
+            }
+        }
+        
+        public func onCancelRecording(session: SwiftSpeech.Session) {
+            for action in actionsOnCancelRecording {
+                action(session)
+            }
+        }
+        
+    }
+}
+
 // MARK: - Functional Components
 public extension SwiftSpeech.ViewModifiers {
     
@@ -28,9 +64,7 @@ public extension SwiftSpeech.ViewModifiers {
         @State var recordingSession: SwiftSpeech.Session? = nil
         @State var viewComponentState: SwiftSpeech.State = .pending
         
-        @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
-        @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
-        @Environment(\.actionsOnCancelRecording) var actionsOnCancelRecording
+        var delegate = SwiftSpeech.FunctionalComponentDelegate()
         
         var gesture: some Gesture {
             let longPress = LongPressGesture(minimumDuration: 60)
@@ -72,17 +106,13 @@ public extension SwiftSpeech.ViewModifiers {
             self.viewComponentState = .recording
             self.recordingSession = session
             try! session.startRecording()
-            for action in actionsOnStartRecording {
-                action(session)
-            }
+            delegate.onStartRecording(session: session)
         }
         
         fileprivate func cancelRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             session.cancel()
-            for action in actionsOnCancelRecording {
-                action(session)
-            }
+            delegate.onCancelRecording(session: session)
             self.viewComponentState = .pending
             self.recordingSession = nil
         }
@@ -90,9 +120,7 @@ public extension SwiftSpeech.ViewModifiers {
         fileprivate func endRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             recordingSession?.stopRecording()
-            for action in actionsOnStopRecording {
-                action(session)
-            }
+            delegate.onStopRecording(session: session)
             self.viewComponentState = .pending
             self.recordingSession = nil
         }
@@ -116,8 +144,7 @@ public extension SwiftSpeech.ViewModifiers {
         @State var recordingSession: SwiftSpeech.Session? = nil
         @State var viewComponentState: SwiftSpeech.State = .pending
         
-        @Environment(\.actionsOnStartRecording) var actionsOnStartRecording
-        @Environment(\.actionsOnStopRecording) var actionsOnStopRecording
+        var delegate = SwiftSpeech.FunctionalComponentDelegate()
         
         var gesture: some Gesture {
             TapGesture()
@@ -145,17 +172,13 @@ public extension SwiftSpeech.ViewModifiers {
             self.viewComponentState = .recording
             self.recordingSession = session
             try! session.startRecording()
-            for action in actionsOnStartRecording {
-                action(session)
-            }
+            delegate.onStartRecording(session: session)
         }
         
         fileprivate func endRecording() {
             guard let session = recordingSession else { preconditionFailure("recordingSession is nil in \(#function)") }
             recordingSession?.stopRecording()
-            for action in actionsOnStopRecording {
-                action(session)
-            }
+            delegate.onStopRecording(session: session)
             self.viewComponentState = .pending
             self.recordingSession = nil
         }
