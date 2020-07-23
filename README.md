@@ -5,7 +5,7 @@
 <h3 align=center>Speech Recognition Made Simple</h3>
 
 <p align=center>
-<a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2-fe562e"></a>
+<a href="https://developer.apple.com/swift"><img src="https://img.shields.io/badge/swift-5.2+-fe562e"></a>
 <a href="https://developer.apple.com/ios"><img src="https://img.shields.io/badge/iOS-13%2B-blue"></a>
 <a href="https://github.com/apple/swift-package-manager"><img src="https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat"></a>
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
@@ -20,7 +20,7 @@
 - [Getting Started](#getting-started)
 - [SwiftSpeech.Session](#swiftspeechsession)
 - [Customized View Components](#customized-view-components)
-- [Customized Functional Components](#customized-functional-components)
+- [Support SwiftSpeech Modifiers](#support-swiftspeech-modifiers)
 - [License](#license)
 
 ## Features
@@ -54,42 +54,30 @@ Here's an exmample:
 <key>NSMicrophoneUsageDescription</key>
 <string>This app uses the mircrophone to record audio for speech recognition.</string>
 ```
-#### One line of code to tackle authorization
-In your `SceneDelegate.swift`, add  `.automaticEnvironmentForSpeechRecognition()` after the initialization of your root view. *Boom! That's it! One line of code!* 
+#### Request Authorization
+Place `SwiftSpeech.requestSpeechRecognitionAuthorization()` where you want the request to happen. A common location is inside an `onAppear` modifier. Common enough that there is a snippet called **Request Speech Recognition Authorization on Appear** exposed in the Xcode Modifiers library.
 ```swift
-func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-    let contentView = ContentView()
-        .automaticEnvironmentForSpeechRecognition()  // Just add this line of code!
-
-    if let windowScene = scene as? UIWindowScene {
-        let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = UIHostingController(rootView: contentView)
-        self.window = window
-        window.makeKeyAndVisible()
-    }
+.onAppear {
+    SwiftSpeech.requestSpeechRecognitionAuthorization()
 }
 ```
-For more information, please refer to the documentation for `automaticEnvironmentForSpeechRecognition()` in `Extensions.swift`.
 ### 2. Try some demos
-You can now start to try out some light-weight demos bundled with the framework using Xcode 11's new preview feature.
-In any of your previews, initialize one of the demo views:
+You can now start to try out some light-weight demos bundled with the framework using Xcode preview. Click the "Preview on Device" button to try the demo on your device.
 ```swift
 static var previews: some View {
-
     // Two of the demo views below can take a `localeIdentifier: String` as an argument.
     // Example locale identifiers:
     // 简体中文（中国）= "zh_Hans_CN"
     // English (US) = "en_US"
     // 日本語（日本）= "ja_JP"
     
-    // Try one of these at a time and have fun!
-    SwiftSpeech.Demos.Basic(localeIdentifier: yourLocaleString)
-    SwiftSpeech.Demos.Colors()
-    SwiftSpeech.Demos.List(localeIdentifier: yourLocaleString)
-    
+    Group {
+        SwiftSpeech.Demos.Basic(localeIdentifier: yourLocaleString)
+        SwiftSpeech.Demos.Colors()
+        SwiftSpeech.Demos.List(localeIdentifier: yourLocaleString)
+    }
 }
 ```
-Open up the Canvas and resume the preview if needed. You should see what your demo looks like. Then, click on <img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Preview_on_Device.png?raw=true" alt="Preview on Device" height=30/> button to run the demo on your device. Hold on the blue circular button to speak and the recognition result will show up! 😉
 
 Here are the "previews" of your `previews`:
 
@@ -181,14 +169,14 @@ For more, please refer to the documentation of `SwiftSpeech.Session`.
 ## Customized View Components
 A **View Component** is a dedicated `View` for design. It does not react to user interaction directly, but instead reacts to its environments, allowing developers to only focus on the view design and making the view more composable. User interactions are handled by the **Functional Component**.
 
-Inspect the source code of `SwiftSpeech.RecordButton` (again, it's not a `Button` since it doesn't respond to user interaction). You will notice that it doesn't own any state or apply any gestures. It only responds to the two environments below.
+Inspect the source code of `SwiftSpeech.RecordButton` (again, it's not a `Button` since it doesn't respond to user interaction). You will notice that it doesn't own any state or apply any gestures. It only responds to the two variables below.
 
 ```swift
 @Environment(\.swiftSpeechState) var state: SwiftSpeech.State
-@Environment(\.isSpeechRecognitionAvailable) var isSpeechRecognitionAvailable: Bool
+@SpeechRecognitionAuthStatus var authStatus
 ```
 
-Both are pretty self-explanatory: the first one represents its current state of recording, and the second one indicates the availability of speech recognition.
+Both are pretty self-explanatory: the first one represents its current state of recording, and the second one indicates the authorization status of speech recognition.
 
 Here are more details of `SwiftSpeech.State`:
 
@@ -204,10 +192,29 @@ enum SwiftSpeech.State {
 }
 ```
 
+`authStatus` here is a `SFSpeechRecognizerAuthorizationStatus`. You can also use `$authStatus` for a short hand of `authStatus == .authorized`.
+
 Combined with a **Functional Component** and some **SwiftSpeech Modifiers**, hopefully, you can build your own fancy record systems now!
-## Customized Functional Components
-🚧 Documentation still in making... Give me a star to keep me motivated!
-For now, please refer to the source code of the demos provided by the framework for example.
+## Support SwiftSpeech Modifiers
+The library provides two general functional components that add a gesture to the view it modifies and perform speech recognition for you:
+```swift
+// They already support SwiftSpeech Modifiers.
+func swiftSpeechRecordOnHold(
+    locale: Locale = .autoupdatingCurrent,
+    animation: Animation = SwiftSpeech.defaultAnimation,
+    distanceToCancel: CGFloat = 50.0
+) -> some View
+
+func swiftSpeechToggleRecordingOnTap(
+    locale: Locale = .autoupdatingCurrent,
+    animation: Animation = SwiftSpeech.defaultAnimation
+)
+```
+If you decide to implement a view that involves a custom gesture other than a hold or a tap, you can also support SwiftSpeech Modifiers by adding a delegate and calling its methods at the appropriate time:
+```swift
+var delegate = SwiftSpeech.FunctionalComponentDelegate()
+```
+For guidance on how to implement a custom view for speech recognition, refer to `ViewModifiers.swift` and SwiftSpeechExamples. It is not that hard, really.
 
 ## License
 SwiftSpeech is available under the [MIT license](https://choosealicense.com/licenses/mit/).
