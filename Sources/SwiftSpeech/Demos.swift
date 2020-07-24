@@ -31,7 +31,7 @@ public extension SwiftSpeech.Demos {
                     .font(.system(size: 25, weight: .bold, design: .default))
                 SwiftSpeech.RecordButton()
                     .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
-                    .onRecognize(update: $text)
+                    .onRecognizeLatest(update: $text)
                 
             }.onAppear {
                 SwiftSpeech.requestSpeechRecognitionAuthorization()
@@ -75,7 +75,7 @@ public extension SwiftSpeech.Demos {
                 SwiftSpeech.RecordButton()
                     .accentColor(color)
                     .swiftSpeechRecordOnHold(locale: Locale(identifier: "en_US"), animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
-                    .onRecognize(update: $text)
+                    .onRecognizeLatest(update: $text)
             }.onAppear {
                 SwiftSpeech.requestSpeechRecognitionAuthorization()
             }
@@ -119,8 +119,12 @@ public extension SwiftSpeech.Demos {
                                 .map { index in
                                     list[index].text = result.bestTranscription.formattedString + (result.isFinal ? "" : "...")
                                 }
-                        } handleError: { _, _ in }
-                        .padding(20),
+                        } handleError: { session, error in
+                            list.firstIndex { $0.session.id == session.id }
+                                .map { index in
+                                    list[index].text = "Error \((error as NSError).code)"
+                                }
+                        }.padding(20),
                     alignment: .bottom
                 ).navigationBarTitle(Text("SwiftSpeech"))
 

@@ -96,34 +96,50 @@ public extension View {
     func onRecognize(
         includePartialResults isPartialResultIncluded: Bool = true,
         handleResult resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
-        handleError errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void = { _, _ in }
+        handleError errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
         modifier(
             SwiftSpeech.ViewModifiers.OnRecognize(
                 isPartialResultIncluded: isPartialResultIncluded,
+                switchToLatest: false,
                 resultHandler: resultHandler,
                 errorHandler: errorHandler
             )
         )
     }
     
-    func onRecognize(
+    func onRecognizeLatest(
+        includePartialResults isPartialResultIncluded: Bool = true,
+        handleResult resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+        handleError errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
+        modifier(
+            SwiftSpeech.ViewModifiers.OnRecognize(
+                isPartialResultIncluded: isPartialResultIncluded,
+                switchToLatest: true,
+                resultHandler: resultHandler,
+                errorHandler: errorHandler
+            )
+        )
+    }
+    
+    func onRecognizeLatest(
         includePartialResults isPartialResultIncluded: Bool = true,
         handleResult resultHandler: @escaping (SFSpeechRecognitionResult) -> Void,
-        handleError errorHandler: @escaping (Error) -> Void = { _ in }
+        handleError errorHandler: @escaping (Error) -> Void
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        onRecognize(
+        onRecognizeLatest(
             includePartialResults: isPartialResultIncluded,
             handleResult: { _, result in resultHandler(result) },
             handleError: { _, error in errorHandler(error) }
         )
     }
     
-    func onRecognize(
+    func onRecognizeLatest(
         includePartialResults isPartialResultIncluded: Bool = true,
         update textBinding: Binding<String>
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.onRecognize(includePartialResults: isPartialResultIncluded) { result in
+        onRecognizeLatest(includePartialResults: isPartialResultIncluded) { result in
             textBinding.wrappedValue = result.bestTranscription.formattedString
         } handleError: { _ in }
     }
@@ -131,9 +147,9 @@ public extension View {
     func printRecognizedText(
         includePartialResults isPartialResultIncluded: Bool = true
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.OnRecognize> {
-        self.onRecognize(includePartialResults: isPartialResultIncluded) { result in
+        onRecognize(includePartialResults: isPartialResultIncluded) { session, result in
             print("[SwiftSpeech] Recognized Text: \(result.bestTranscription.formattedString)")
-        } handleError: { _ in }
+        } handleError: { _, _ in }
     }
 }
 

@@ -199,10 +199,11 @@ public extension SwiftSpeech.ViewModifiers {
         @State var model: Model
         
         init(isPartialResultIncluded: Bool,
+             switchToLatest: Bool,
              resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
              errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
         ) {
-            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, resultHandler: resultHandler, errorHandler: errorHandler))
+            self._model = State(initialValue: Model(isPartialResultIncluded: isPartialResultIncluded, switchToLatest: switchToLatest, resultHandler: resultHandler, errorHandler: errorHandler))
         }
         
         public func body(content: Content) -> some View {
@@ -212,35 +213,49 @@ public extension SwiftSpeech.ViewModifiers {
         }
         
         class Model {
+            
             let sessionSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
             let cancelSubject = PassthroughSubject<SwiftSpeech.Session, Never>()
             var cancelBag = Set<AnyCancellable>()
             
             init(
                 isPartialResultIncluded: Bool,
+                switchToLatest: Bool,
                 resultHandler: @escaping (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
                 errorHandler: @escaping (SwiftSpeech.Session, Error) -> Void
             ) {
-                sessionSubject
-                    .compactMap { (session: SwiftSpeech.Session) -> AnyPublisher<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>? in
-                        session.resultPublisher?
-                            .filter { result in
-                                isPartialResultIncluded ? true : (result.isFinal)
-                            }.catch { (error: Error) -> Empty<SFSpeechRecognitionResult, Never> in
-                                errorHandler(session, error)
-                                return Empty(completeImmediately: true)
-                            }.map { (session, $0) }
-                            .eraseToAnyPublisher()
-                    }
-                    .merge(with:
-                        cancelSubject
-                            .map { _ in Empty<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>(completeImmediately: true).eraseToAnyPublisher() }
-                    )
-                    .switchToLatest()
-                    .sink { tuple in
-                        let (session, result) = tuple
-                        resultHandler(session, result)
-                    }.store(in: &cancelBag)
+                let transform = { (session: SwiftSpeech.Session) -> AnyPublisher<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>? in
+                    session.resultPublisher?
+                        .filter { result in
+                            isPartialResultIncluded ? true : (result.isFinal)
+                        }.catch { (error: Error) -> Empty<SFSpeechRecognitionResult, Never> in
+                            errorHandler(session, error)
+                            return Empty(completeImmediately: true)
+                        }.map { (session, $0) }
+                        .eraseToAnyPublisher()
+                }
+                
+                let receiveValue = { (tuple: (SwiftSpeech.Session, SFSpeechRecognitionResult)) -> Void in
+                    let (session, result) = tuple
+                    resultHandler(session, result)
+                }
+                
+                if switchToLatest {
+                    sessionSubject
+                        .compactMap(transform)
+                        .merge(with:
+                            cancelSubject
+                                .map { _ in Empty<(SwiftSpeech.Session, SFSpeechRecognitionResult), Never>(completeImmediately: true).eraseToAnyPublisher() }
+                        ).switchToLatest()
+                        .sink(receiveValue: receiveValue)
+                        .store(in: &cancelBag)
+                } else {
+                    sessionSubject
+                        .compactMap(transform)
+                        .flatMap(maxPublishers: .unlimited) { $0 }
+                        .sink(receiveValue: receiveValue)
+                        .store(in: &cancelBag)
+                }
             }
             
         }
