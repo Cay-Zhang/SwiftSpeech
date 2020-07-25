@@ -15,6 +15,7 @@
 
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines.**
 
+- [SwiftSpeech Examples](#swiftspeech-examples)
 - [Features](#features)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
@@ -22,6 +23,9 @@
 - [Customized View Components](#customized-view-components)
 - [Support SwiftSpeech Modifiers](#support-swiftspeech-modifiers)
 - [License](#license)
+
+## SwiftSpeech Examples
+Aside from the readme, the best way to learn more about SwiftSpeech and how speech recognition capabilities are implemented in apps like WeChat is to check out my new project [**SwiftSpeech Examples**](https://github.com/Cay-Zhang/SwiftSpeechExamples). For now, it contains a WeChat voice message interface mock and the three demos in SwiftSpeech.
 
 ## Features
 **SwiftSpeech** is a wrapper for Apple's **Speech** framework with deep **SwiftUI** and **Combine** integration.
@@ -91,7 +95,7 @@ Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is
 ```swift
 SwiftSpeech.RecordButton()                                        // 1. The View Component
     .swiftSpeechRecordOnHold(locale:animation:distanceToCancel:)  // 2. The Functional Component
-    .onRecognize(update: $text)                                   // 3. SwiftSpeech Modifier(s)
+    .onRecognizeLatest(update: $text)                             // 3. SwiftSpeech Modifier(s)
 ```
 There are three parts here (and luckily, you can customize every one of them!):
 1. **The View Component**: A `View` that is only responsible for UI.
@@ -104,26 +108,45 @@ For now, you can just use the built-in View Component and Functional Component. 
 
 ```swift
 // 1
-// `SwiftSpeech.Demos.Basic` & `SwiftSpeech.Demos.Colors` use these modifiers.
+// All three demos use these modifiers.
 // Inspect the source code of them if you want examples!
-.onRecognize(textHandler: (String) -> Void)
-.onRecognize(update: Binding<String>)
-.printRecognizedText()
-```
-The first kind of modifiers is the most straight forward and convenient. It does something when a new recognition result is yielded.
+.onRecognizeLatest(
+    includePartialResults: Bool = true,
+    handleResult: (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+    handleError: (SwiftSpeech.Session, Error) -> Void
+)
 
-But frankly, this is more of a shortcut for playing/testing since many apps have to deal with some complicated underlying database and a simple `Binding` or closure is just not enough for it. And that's when the second set comes to rescue.
+.onRecognize(
+    includePartialResults: Bool = true,
+    handleResult: (SwiftSpeech.Session, SFSpeechRecognitionResult) -> Void,
+    handleError: (SwiftSpeech.Session, Error) -> Void
+)
+
+// This one simply assigns the recognized text to the binding in `handleResult` and ignores errors.
+.onRecognizeLatest(
+    includePartialResults: Bool = true,
+    update: Binding<String>
+)
+
+// This one prints the recognized text and ignores errors.
+.printRecognizedText(includePartialResults: Bool = true)
+```
+The first group of modifiers encapsulates the core value of SwiftSpeech. It does all the publisher transformation and subscription for you and calls the closures with enough information to facilitate a sophisticated task when a recognition result is yielded.
+
+`onRecognizeLatest` ignores recognition results from the last recording session (if any) when a new session is started, while `onRecognize` subscribes to results from every recording session.
+
+In `handleResult`, the first closure parameter is a `SwiftSpeech.Session`, which has a unique `id` for every recording. Use it to distinguish the recognition result from one recording and that from another.
+
+The second is a [`SFSpeechRecognitionResult`](https://developer.apple.com/documentation/speech/sfspeechrecognitionresult), which contains rich information about the recognition. Not only the recognized text (`result.bestTranscription.formattedString`), but also interesting stuff like **speaking rate** and **pitch**!
 
 ```swift
 // 2
-// `SwiftSpeech.Demos.List` uses these modifiers.
-// Inspect the source code of it if you want examples!
 .onStartRecording(appendAction: (SwiftSpeech.Session) -> Void)
 .onStopRecording(appendAction: (SwiftSpeech.Session) -> Void)
 .onCancelRecording(appendAction: (SwiftSpeech.Session) -> Void)
 ```
 
-The second kind gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/cancelled. Inside the closures, you will have access to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
+The second group gives you utter control over the whole lifespan of a `SwiftSpeech.Session`.  It runs the provided closures after a recording was started/stopped/cancelled. Inside the closures, you will have access to the corresponding `SwiftSpeech.Session`, which is discussed [below](#swiftspeech.session).
 
 ```swift
 // 3
@@ -134,7 +157,7 @@ The second kind gives you utter control over the whole lifespan of a `SwiftSpeec
 .onCancelRecording(sendSessionTo: Subject)
 ```
 
-The third kind might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/cancelled.
+The third group might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/cancelled.
 
 ## SwiftSpeech.Session
 ### Inside SwiftSpeech's Session Handler
