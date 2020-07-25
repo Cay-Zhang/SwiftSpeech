@@ -16,13 +16,15 @@ extension SwiftSpeech {
     }
     
     class AuthorizationCenter: ObservableObject {
-        @Published var speechRecognitionAuthorizationStatus: SFSpeechRecognizerAuthorizationStatus = .notDetermined
+        @Published var speechRecognitionAuthorizationStatus: SFSpeechRecognizerAuthorizationStatus = SFSpeechRecognizer.authorizationStatus()
         
         func requestSpeechRecognitionAuthorization() {
             // Asynchronously make the authorization request.
-            SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
-                DispatchQueue.main.async {
-                    self?.speechRecognitionAuthorizationStatus = authStatus
+            SFSpeechRecognizer.requestAuthorization { authStatus in
+                if self.speechRecognitionAuthorizationStatus != authStatus {
+                    DispatchQueue.main.async {
+                        self.speechRecognitionAuthorizationStatus = authStatus
+                    }
                 }
             }
         }
