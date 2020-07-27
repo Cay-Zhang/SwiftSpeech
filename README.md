@@ -1,5 +1,5 @@
 <div align=center>
-<img src="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Icon.png?raw=true" width="180" height="180" align=center>
+<img src="Readme Assets/Icon.png" width="180" height="180" align=center>
 </div>
 <h1 align=center>SwiftSpeech</h1>
 <h3 align=center>Speech Recognition Made Simple</h3>
@@ -11,7 +11,7 @@
 <a href="https://github.com/Cay-Zhang/SwiftSpeech/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat"></a>
 </p>
 
-![A few lines of code to do this!](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Pitch.gif?raw=true)
+![A few lines of code to do this!](Readme%20Assets/Pitch.gif)
 
 **Recognize your user's voice elegantly without having to figure out authorization and audio engines.**
 
@@ -26,6 +26,8 @@
 
 ## SwiftSpeech Examples
 Aside from the readme, the best way to learn more about SwiftSpeech and how speech recognition capabilities are implemented in apps like WeChat is to check out my new project [**SwiftSpeech Examples**](https://github.com/Cay-Zhang/SwiftSpeechExamples). For now, it contains a WeChat voice message interface mock and the three demos in SwiftSpeech.
+
+![WeChat](Readme%20Assets/WeChat.gif)
 
 ## Features
 **SwiftSpeech** is a wrapper for Apple's **Speech** framework with deep **SwiftUI** and **Combine** integration.
@@ -85,7 +87,7 @@ static var previews: some View {
 
 Here are the "previews" of your `previews`:
 
-![Demos](https://github.com/Cay-Zhang/SwiftSpeech/blob/master/Readme%20Assets/Demos.gif?raw=true)
+![Demos](Readme%20Assets/Demos.gif)
 
 ### 3. Build it yourself
 
