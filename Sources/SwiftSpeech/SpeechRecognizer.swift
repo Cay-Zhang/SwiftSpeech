@@ -9,58 +9,6 @@ import SwiftUI
 import Speech
 import Combine
 
-extension SwiftSpeech {
-    
-    /**
-     A `Session` is a light-weight struct that essentially holds a weak reference to its underlying class whose lifespan is managed by the framework.
-     If you are filling in a `(Session) -> Void` handler provided by the framework, you may want to check its `stringPublisher` and `resultPublisher` properties.
-     - Note: You can only call `startRecording()` once on a `Session` and after it completes the recognition task, all of its properties will be `nil` and actions will take no effect.
-     */
-    @dynamicMemberLookup public struct Session : Identifiable {
-        public let id: UUID
-        
-        public subscript<T>(dynamicMember keyPath: KeyPath<SpeechRecognizer, T>) -> T? {
-            return SpeechRecognizer.recognizer(withID: id)?[keyPath: keyPath]
-        }
-        
-        public init(id: UUID = UUID(), locale: Locale = .current) {
-            self.id = id
-            _ = SpeechRecognizer.new(id: id, locale: locale)
-        }
-        
-        /**
-         Sets up the audio stuff automatically for you and start recording the user's voice.
-         
-         - Note: Avoid using this method twice.
-                 Start receiving the recognition results by subscribing to one of the publishers.
-         - Throws: Errors can occur when:
-                   1. There is problem in the structure of the graph. Input can't be routed to output or to a recording tap through converter type nodes.
-                   2. An AVAudioSession error occurred
-                   3. The driver failed to start the hardware
-         */
-        public func startRecording() throws {
-            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
-            try recognizer.startRecording()
-        }
-        
-        public func stopRecording() {
-            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
-            recognizer.stopRecording()
-        }
-        
-        /**
-         Immediately halts the recognition process and invalidate the `Session`.
-         */
-        public func cancel() {
-            guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
-            recognizer.cancel()
-        }
-        
-    }
-}
-
-
-
 /// ⚠️ Warning: You should **never keep** a strong reference to a `SpeechRecognizer` instance. Instead, use its `id` property to keep track of it and
 /// use a `SwiftSpeech.Session` whenever it's possible.
 public class SpeechRecognizer {
@@ -70,6 +18,8 @@ public class SpeechRecognizer {
     public typealias ID = UUID
     
     private var id: SpeechRecognizer.ID
+    
+    public var sessionConfiguration: SwiftSpeech.Session.Configuration
     
     private let speechRecognizer: SFSpeechRecognizer
     
@@ -110,10 +60,13 @@ public class SpeechRecognizer {
         // Create and configure the speech recognition request.
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object") }
-        recognitionRequest.shouldReportPartialResults = true
         
-        // Keep speech recognition data on device
-        recognitionRequest.requiresOnDeviceRecognition = false
+        // Use `sessionConfiguration` to configure the recognition request
+        recognitionRequest.shouldReportPartialResults = sessionConfiguration.shouldReportPartialResults
+        recognitionRequest.requiresOnDeviceRecognition = sessionConfiguration.requiresOnDeviceRecognition
+        recognitionRequest.taskHint = sessionConfiguration.taskHint
+        recognitionRequest.contextualStrings = sessionConfiguration.contextualStrings
+        recognitionRequest.interactionIdentifier = sessionConfiguration.interactionIdentifier
         
         // Create a recognition task for the speech recognition session.
         // Keep a reference to the task so that it can be cancelled.
@@ -171,19 +124,14 @@ public class SpeechRecognizer {
     }
     
     // MARK: - Init
-    fileprivate convenience init(id: ID = ID(), locale: Locale = .current) {
-        let speechRecognizer: SFSpeechRecognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
-        self.init(id: id, speechRecognizer: speechRecognizer)
-    }
-    
-    fileprivate init(id: ID = ID(), speechRecognizer: SFSpeechRecognizer) {
-        self.speechRecognizer = speechRecognizer
-        self.speechRecognizer.defaultTaskHint = .search
+    fileprivate init(id: ID, sessionConfiguration: SwiftSpeech.Session.Configuration) {
         self.id = id
+        self.speechRecognizer = SFSpeechRecognizer(locale: sessionConfiguration.locale) ?? SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
+        self.sessionConfiguration = sessionConfiguration
     }
     
-    public static func new(id: ID = ID(), locale: Locale = .current) -> SpeechRecognizer {
-        let recognizer = SpeechRecognizer(id: id, locale: locale)
+    public static func new(id: ID, sessionConfiguration: SwiftSpeech.Session.Configuration) -> SpeechRecognizer {
+        let recognizer = SpeechRecognizer(id: id, sessionConfiguration: sessionConfiguration)
         instances.append(recognizer)
         return recognizer
     }

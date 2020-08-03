@@ -50,13 +50,19 @@ public extension SwiftSpeech.ViewModifiers {
     
     struct RecordOnHold : ViewModifier {
         
-        public init(locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
-            self.locale = locale
+        public init(locale: Locale, animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
+            self.sessionConfiguration = SwiftSpeech.Session.Configuration(locale: locale)
             self.animation = animation
             self.distanceToCancel = distanceToCancel
         }
         
-        var locale: Locale
+        public init(sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(), animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
+            self.sessionConfiguration = sessionConfiguration
+            self.animation = animation
+            self.distanceToCancel = distanceToCancel
+        }
+        
+        var sessionConfiguration: SwiftSpeech.Session.Configuration
         var animation: Animation
         var distanceToCancel: CGFloat
         
@@ -103,7 +109,7 @@ public extension SwiftSpeech.ViewModifiers {
         
         fileprivate func startRecording() {
             let id = SpeechRecognizer.ID()
-            let session = SwiftSpeech.Session(id: id, locale: self.locale)
+            let session = SwiftSpeech.Session(id: id, configuration: sessionConfiguration)
             // View update
             self.viewComponentState = .recording
             self.recordingSession = session
@@ -134,12 +140,16 @@ public extension SwiftSpeech.ViewModifiers {
      */
     struct ToggleRecordingOnTap : ViewModifier {
         
-        public init(locale: Locale = .autoupdatingCurrent, animation: Animation = SwiftSpeech.defaultAnimation) {
-            self.locale = locale
+        public init(locale: Locale, animation: Animation = SwiftSpeech.defaultAnimation) {
+            self.init(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale), animation: animation)
+        }
+        
+        public init(sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(), animation: Animation = SwiftSpeech.defaultAnimation) {
+            self.sessionConfiguration = sessionConfiguration
             self.animation = animation
         }
         
-        var locale: Locale
+        var sessionConfiguration: SwiftSpeech.Session.Configuration
         var animation: Animation
         
         @SpeechRecognitionAuthStatus var authStatus
@@ -171,7 +181,7 @@ public extension SwiftSpeech.ViewModifiers {
         
         fileprivate func startRecording() {
             let id = SpeechRecognizer.ID()
-            let session = SwiftSpeech.Session(id: id, locale: self.locale)
+            let session = SwiftSpeech.Session(id: id, configuration: sessionConfiguration)
             // View update
             self.viewComponentState = .recording
             self.recordingSession = session
