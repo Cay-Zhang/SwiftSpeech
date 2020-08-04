@@ -49,13 +49,6 @@ public extension SwiftSpeech {
 public extension SwiftSpeech.ViewModifiers {
     
     struct RecordOnHold : ViewModifier {
-        
-        public init(locale: Locale, animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
-            self.sessionConfiguration = SwiftSpeech.Session.Configuration(locale: locale)
-            self.animation = animation
-            self.distanceToCancel = distanceToCancel
-        }
-        
         public init(sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(), animation: Animation = SwiftSpeech.defaultAnimation, distanceToCancel: CGFloat = 50.0) {
             self.sessionConfiguration = sessionConfiguration
             self.animation = animation
@@ -139,11 +132,6 @@ public extension SwiftSpeech.ViewModifiers {
      `viewComponentState` will never be `.cancelling` here.
      */
     struct ToggleRecordingOnTap : ViewModifier {
-        
-        public init(locale: Locale, animation: Animation = SwiftSpeech.defaultAnimation) {
-            self.init(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale), animation: animation)
-        }
-        
         public init(sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(), animation: Animation = SwiftSpeech.defaultAnimation) {
             self.sessionConfiguration = sessionConfiguration
             self.animation = animation

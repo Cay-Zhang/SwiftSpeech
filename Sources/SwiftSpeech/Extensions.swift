@@ -73,24 +73,39 @@ public extension View {
 public extension View {
     
     func swiftSpeechRecordOnHold(
-        locale: Locale = .autoupdatingCurrent,
+        sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(),
         animation: Animation = SwiftSpeech.defaultAnimation,
         distanceToCancel: CGFloat = 50.0
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold> {
         self.modifier(
             SwiftSpeech.ViewModifiers.RecordOnHold(
-                locale: locale,
+                sessionConfiguration: sessionConfiguration,
                 animation: animation,
                 distanceToCancel: distanceToCancel
             )
         )
     }
     
+    func swiftSpeechRecordOnHold(
+        locale: Locale,
+        animation: Animation = SwiftSpeech.defaultAnimation,
+        distanceToCancel: CGFloat = 50.0
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.RecordOnHold> {
+        self.swiftSpeechRecordOnHold(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale), animation: animation, distanceToCancel: distanceToCancel)
+    }
+    
+    func swiftSpeechToggleRecordingOnTap(
+        sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(),
+        animation: Animation = SwiftSpeech.defaultAnimation
+    ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.ToggleRecordingOnTap> {
+        self.modifier(SwiftSpeech.ViewModifiers.ToggleRecordingOnTap(sessionConfiguration: sessionConfiguration, animation: animation))
+    }
+    
     func swiftSpeechToggleRecordingOnTap(
         locale: Locale = .autoupdatingCurrent,
         animation: Animation = SwiftSpeech.defaultAnimation
     ) -> ModifiedContent<Self, SwiftSpeech.ViewModifiers.ToggleRecordingOnTap> {
-        self.modifier(SwiftSpeech.ViewModifiers.ToggleRecordingOnTap(locale: locale, animation: animation))
+        self.swiftSpeechToggleRecordingOnTap(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale), animation: animation)
     }
     
     func onRecognize(

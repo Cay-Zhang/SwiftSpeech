@@ -13,16 +13,20 @@ public extension SwiftSpeech.Demos {
     
     struct Basic : View {
         
-        var locale: Locale
+        var sessionConfiguration: SwiftSpeech.Session.Configuration
         
         @State private var text = "Tap to Speak"
         
-        public init(locale: Locale = .autoupdatingCurrent) {
-            self.locale = locale
+        public init(sessionConfiguration: SwiftSpeech.Session.Configuration) {
+            self.sessionConfiguration = sessionConfiguration
+        }
+        
+        public init(locale: Locale = .current) {
+            self.init(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale))
         }
         
         public init(localeIdentifier: String) {
-            self.locale = Locale(identifier: localeIdentifier)
+            self.init(locale: Locale(identifier: localeIdentifier))
         }
         
         public var body: some View {
@@ -30,7 +34,7 @@ public extension SwiftSpeech.Demos {
                 Text(text)
                     .font(.system(size: 25, weight: .bold, design: .default))
                 SwiftSpeech.RecordButton()
-                    .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                    .swiftSpeechToggleRecordingOnTap(sessionConfiguration: sessionConfiguration, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
                     .onRecognizeLatest(update: $text)
                 
             }.onAppear {
@@ -85,16 +89,20 @@ public extension SwiftSpeech.Demos {
 
     struct List : View {
 
-        var locale: Locale
-        
+        var sessionConfiguration: SwiftSpeech.Session.Configuration
+
         @State var list: [(session: SwiftSpeech.Session, text: String)] = []
         
-        public init(locale: Locale = .autoupdatingCurrent) {
-            self.locale = locale
+        public init(sessionConfiguration: SwiftSpeech.Session.Configuration) {
+            self.sessionConfiguration = sessionConfiguration
         }
-
+        
+        public init(locale: Locale = .current) {
+            self.init(sessionConfiguration: SwiftSpeech.Session.Configuration(locale: locale))
+        }
+        
         public init(localeIdentifier: String) {
-            self.locale = Locale(identifier: localeIdentifier)
+            self.init(locale: Locale(identifier: localeIdentifier))
         }
 
         public var body: some View {
@@ -106,7 +114,7 @@ public extension SwiftSpeech.Demos {
                 }.overlay(
                     SwiftSpeech.RecordButton()
                         .swiftSpeechRecordOnHold(
-                            locale: self.locale,
+                            sessionConfiguration: sessionConfiguration,
                             animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0),
                             distanceToCancel: 100.0
                         ).onStartRecording { session in
