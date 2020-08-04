@@ -30,8 +30,13 @@ public extension SwiftSpeech.Demos {
                 Text(text)
                     .font(.system(size: 25, weight: .bold, design: .default))
                 SwiftSpeech.RecordButton()
-                    .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
-                    .onRecognizeLatest(update: $text)
+                    .swiftSpeech()
+                    .toggleRecordingOnTap(locale: locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+                    .onRecognizeLatest { _, result in
+                        text = result.bestTranscription.formattedString
+                    } handleError: { _, _ in }
+//                    .swiftSpeechToggleRecordingOnTap(locale: self.locale, animation: .spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0))
+//                    .onRecognizeLatest(update: $text)
                 
             }.onAppear {
                 SwiftSpeech.requestSpeechRecognitionAuthorization()
