@@ -96,12 +96,12 @@ Knowing what this framework can do, you can now start to learn about the concept
 Inspect the source code of `SwiftSpeech.Demos.Basic`. The only new thing here is this:
 ```swift
 SwiftSpeech.RecordButton()                                        // 1. The View Component
-    .swiftSpeechRecordOnHold(locale:animation:distanceToCancel:)  // 2. The Functional Component
+    .swiftSpeechRecordOnHold(sessionConfiguration:animation:distanceToCancel:)  // 2. The Functional Component
     .onRecognizeLatest(update: $text)                             // 3. SwiftSpeech Modifier(s)
 ```
 There are three parts here (and luckily, you can customize every one of them!):
 1. **The View Component**: A `View` that is only responsible for UI.
-2. **The Functional Component**: A component that handles user interaction and provides the essential functionality of speech recognition. In the built-in one here, the first two arguments let you specify a locale (language) for recognition and an animation used when the user interacts with the **View Component**. The third argument sets the distance the user has to swipe up in order to cancel the recording. The framework also provides another **Functional Component**: `.swiftSpeechToggleRecordingOnTap(locale:animation:)`.
+2. **The Functional Component**: A component that handles user interaction and provides the essential functionality of speech recognition. In the built-in one here, the first two arguments let you specify the [configuration](#configuration) for the recording session (locales and more) and an animation used when the user interacts with the **View Component**. The third argument sets the distance the user has to swipe up in order to cancel the recording. The framework also provides another **Functional Component**: `.swiftSpeechToggleRecordingOnTap(sessionConfiguration:animation:)`.
 3. **SwiftSpeech Modifier(s)**: One or more components allowing you to receive and manipulate the recognition results. They can be stacked together to create powerful effects.
 
 For now, you can just use the built-in View Component and Functional Component. Let's explore some **SwiftSpeech Modifiers** first since every app handles its data differently:
@@ -162,26 +162,20 @@ The second group gives you utter control over the whole lifespan of a `SwiftSpee
 The third group might be useful if you prefer a reactive programming style. The only new argument here is a `Combine.Subject` (e.g. `CurrentValueSubject` and `PassthroughSubject`) and the modifier will send the corresponding `SwiftSpeech.Session` to the `Subject` after a recording is started/stopped/cancelled.
 
 ## SwiftSpeech.Session
-### Inside SwiftSpeech's Session Handler
-If you are filling in a `(Session) -> Void` handler provided by the framework, use the publishers provided by the `Session` to receive updates on recognition results.
+### Configuration
+A session can be configured using a `SwiftSpeech.Session.Configuration` struct. A configuration contains information such as the locale, the task hint, custom phrases to recognize, and options for on-device recognition. Inspect `SwiftSpeech.Session.Configuration` for more details.
+### Customized Subscription to Recognition Results
+If the built-in `onRecognize(Latest)` modifiers do not satisfy your needs, you can subscribe to recognition results via `onStart/Stop/CancelRecording`.
 
-Currently, a `Session` has two publishers (you only need to subscribe to one of them): `stringPublisher` and `resultPublisher`.
+A `Session` publishes its recognition results via its `resultPublisher`. It has an `Output` type of `SFSpeechRecognitionResult` and an `Failure` type of `Error`.
 
-`stringPublisher` directly emits the speech text recognized (By default, it will emit partial results, which means **you may receive multiple events**). You will receive a `.finished` completion event when the `Session` finishes processing the user's voice (i.e. `sfSpeechRecognitionResult.isFinal == true`), or you explicitly called the `cancelRecording()` method.
+You will receive a completion event when the `Session` finishes processing the user's voice (i.e. `result.isFinal == true`), an error happens, or you have explicitly called the `cancelRecording()` on the session.
 
-You can subscribe to `stringPublisher` in the following way:
-```swift
-speechRecognizer.stringPublisher
-    .sink { text in
-        print("[SwiftSpeech]: \(text)")
-    }
-    .store(in: &someCancelBag)
-```
-For `resultPublisher`, the subscribing process is similar, except that the type of the element it will emit is `Result<SFSpeechRecognitionResult, Error>` which encapsulates the entire partial result from the underlying `SFSpeechRecognizer` or the error it emits during recognition.
+A `Session` also has a convenient publisher called `stringPublisher` that maps the results to the recognized string.
 ### Independent Use
-Here's an exmaple of using `Session` to recognize user's voice and receive updates.
+Here's an example of using `Session` to recognize user's voice and receive updates.
 ```swift
-let session = SwiftSpeech.Session(locale: .current)
+let session = SwiftSpeech.Session(configuration: SwiftSpeech.Session.Configuration(locale: Locale(identifier: "en-US"), contextualStrings: ["SwiftSpeech"]))
 try session.startRecording()
 session.stringPublisher?
     .sink { text in
@@ -225,13 +219,13 @@ The library provides two general functional components that add a gesture to the
 ```swift
 // They already support SwiftSpeech Modifiers.
 func swiftSpeechRecordOnHold(
-    locale: Locale = .autoupdatingCurrent,
+    sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(),
     animation: Animation = SwiftSpeech.defaultAnimation,
     distanceToCancel: CGFloat = 50.0
 ) -> some View
 
 func swiftSpeechToggleRecordingOnTap(
-    locale: Locale = .autoupdatingCurrent,
+    sessionConfiguration: SwiftSpeech.Session.Configuration = SwiftSpeech.Session.Configuration(),
     animation: Animation = SwiftSpeech.defaultAnimation
 )
 ```
