@@ -106,8 +106,8 @@ public extension SwiftSpeech.ViewModifiers {
             // View update
             self.viewComponentState = .recording
             self.recordingSession = session
-            try! session.startRecording()
             delegate.onStartRecording(session: session)
+            session.startRecording()
         }
         
         fileprivate func cancelRecording() {
@@ -173,8 +173,8 @@ public extension SwiftSpeech.ViewModifiers {
             // View update
             self.viewComponentState = .recording
             self.recordingSession = session
-            try! session.startRecording()
             delegate.onStartRecording(session: session)
+            session.startRecording()
         }
         
         fileprivate func endRecording() {

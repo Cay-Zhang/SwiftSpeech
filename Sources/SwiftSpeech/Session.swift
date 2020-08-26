@@ -41,9 +41,9 @@ extension SwiftSpeech {
                    2. An AVAudioSession error occurred
                    3. The driver failed to start the hardware
          */
-        public func startRecording() throws {
+        public func startRecording() {
             guard let recognizer = SpeechRecognizer.recognizer(withID: id) else { return }
-            try recognizer.startRecording()
+            recognizer.startRecording()
         }
         
         public func stopRecording() {

@@ -141,6 +141,8 @@ In `handleResult`, the first closure parameter is a `SwiftSpeech.Session`, which
 
 The second is a [`SFSpeechRecognitionResult`](https://developer.apple.com/documentation/speech/sfspeechrecognitionresult), which contains rich information about the recognition. Not only the recognized text (`result.bestTranscription.formattedString`), but also interesting stuff like **speaking rate** and **pitch**!
 
+In `handleError`, you will handle the errors produced in the recognition process and also during the initialization of the recording session (such as a microphone activation failure).
+
 ```swift
 // 2
 .onStartRecording(appendAction: (SwiftSpeech.Session) -> Void)

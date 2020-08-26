@@ -42,60 +42,63 @@ public class SpeechRecognizer {
             .eraseToAnyPublisher()
     }
     
-    public func startRecording() throws {
-        
-        // Cancel the previous task if it's running.
-        recognitionTask?.cancel()
-        self.recognitionTask = nil
-        
-        // Configure the audio session for the app if it's on iOS/Mac Catalyst.
-        #if canImport(UIKit)
-        let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-        #endif
-        
-        let inputNode = audioEngine.inputNode
+    public func startRecording() {
+        do {
+            // Cancel the previous task if it's running.
+            recognitionTask?.cancel()
+            self.recognitionTask = nil
+            
+            // Configure the audio session for the app if it's on iOS/Mac Catalyst.
+            #if canImport(UIKit)
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            #endif
+            
+            let inputNode = audioEngine.inputNode
 
-        // Create and configure the speech recognition request.
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object") }
-        
-        // Use `sessionConfiguration` to configure the recognition request
-        recognitionRequest.shouldReportPartialResults = sessionConfiguration.shouldReportPartialResults
-        recognitionRequest.requiresOnDeviceRecognition = sessionConfiguration.requiresOnDeviceRecognition
-        recognitionRequest.taskHint = sessionConfiguration.taskHint
-        recognitionRequest.contextualStrings = sessionConfiguration.contextualStrings
-        recognitionRequest.interactionIdentifier = sessionConfiguration.interactionIdentifier
-        
-        // Create a recognition task for the speech recognition session.
-        // Keep a reference to the task so that it can be cancelled.
-        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
-            guard let self = self else { return }
-            if let result = result {
-                self.resultSubject.send(result)
-                if result.isFinal {
-                    self.resultSubject.send(completion: .finished)
+            // Create and configure the speech recognition request.
+            recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+            guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object") }
+            
+            // Use `sessionConfiguration` to configure the recognition request
+            recognitionRequest.shouldReportPartialResults = sessionConfiguration.shouldReportPartialResults
+            recognitionRequest.requiresOnDeviceRecognition = sessionConfiguration.requiresOnDeviceRecognition
+            recognitionRequest.taskHint = sessionConfiguration.taskHint
+            recognitionRequest.contextualStrings = sessionConfiguration.contextualStrings
+            recognitionRequest.interactionIdentifier = sessionConfiguration.interactionIdentifier
+            
+            // Create a recognition task for the speech recognition session.
+            // Keep a reference to the task so that it can be cancelled.
+            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+                guard let self = self else { return }
+                if let result = result {
+                    self.resultSubject.send(result)
+                    if result.isFinal {
+                        self.resultSubject.send(completion: .finished)
+                        SpeechRecognizer.remove(id: self.id)
+                    }
+                } else if let error = error {
+                    self.stopRecording()
+                    self.resultSubject.send(completion: .failure(error))
                     SpeechRecognizer.remove(id: self.id)
+                } else {
+                    fatalError("No result and no error")
                 }
-            } else if let error = error {
-                self.stopRecording()
-                self.resultSubject.send(completion: .failure(error))
-                SpeechRecognizer.remove(id: self.id)
-            } else {
-                fatalError("No result and no error")
             }
-        }
 
-        // Configure the microphone input.
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
-            self.recognitionRequest?.append(buffer)
+            // Configure the microphone input.
+            let recordingFormat = inputNode.outputFormat(forBus: 0)
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
+                self.recognitionRequest?.append(buffer)
+            }
+            
+            audioEngine.prepare()
+            try audioEngine.start()
+        } catch {
+            resultSubject.send(completion: .failure(error))
+            SpeechRecognizer.remove(id: self.id)
         }
-        
-        audioEngine.prepare()
-        try audioEngine.start()
-        
     }
     
     public func stopRecording() {
