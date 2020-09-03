@@ -51,7 +51,7 @@ public class SpeechRecognizer {
             // Configure the audio session for the app if it's on iOS/Mac Catalyst.
             #if canImport(UIKit)
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: .duckOthers)
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: .defaultToSpeaker)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
             #endif
             
