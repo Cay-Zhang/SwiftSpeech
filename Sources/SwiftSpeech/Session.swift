@@ -113,13 +113,74 @@ public extension SwiftSpeech.Session {
          */
         public var interactionIdentifier: String? = nil
         
-        public init(locale: Locale = .current, taskHint: SFSpeechRecognitionTaskHint = .unspecified, shouldReportPartialResults: Bool = true, requiresOnDeviceRecognition: Bool = false, contextualStrings: [String] = [], interactionIdentifier: String? = nil) {
+        /**
+         A configuration for configuring/activating/deactivating your app's `AVAudioSession` at the appropriate time.
+         The default value is `.recordOnly`, which activate/deactivate a **record only** audio session when a recording session starts/stops.
+         
+         See `SwiftSpeech.Session.AudioSessionConfiguration` for more options.
+         */
+        public var audioSessionConfiguration: AudioSessionConfiguration = .recordOnly
+        
+        public init(
+            locale: Locale = .current,
+            taskHint: SFSpeechRecognitionTaskHint = .unspecified,
+            shouldReportPartialResults: Bool = true,
+            requiresOnDeviceRecognition: Bool = false,
+            contextualStrings: [String] = [],
+            interactionIdentifier: String? = nil,
+            audioSessionConfiguration: AudioSessionConfiguration = .recordOnly
+        ) {
             self.locale = locale
             self.taskHint = taskHint
             self.shouldReportPartialResults = shouldReportPartialResults
             self.requiresOnDeviceRecognition = requiresOnDeviceRecognition
             self.contextualStrings = contextualStrings
             self.interactionIdentifier = interactionIdentifier
+            self.audioSessionConfiguration = audioSessionConfiguration
         }
+    }
+}
+
+public extension SwiftSpeech.Session {
+    struct AudioSessionConfiguration {
+        
+        public var onStartRecording: (AVAudioSession) throws -> Void
+        public var onStopRecording: (AVAudioSession) throws -> Void
+        
+        /**
+         Create a configuration using two closures.
+         */
+        public init(onStartRecording: @escaping (AVAudioSession) throws -> Void, onStopRecording: @escaping (AVAudioSession) throws -> Void) {
+            self.onStartRecording = onStartRecording
+            self.onStopRecording = onStopRecording
+        }
+        
+        /**
+         A record only configuration that is activated/deactivated when a recording session starts/stops.
+         
+         During the recording session, virtually all output on the system is silenced. Audio from other apps can resume after the recording session stops.
+         */
+        public static let recordOnly = AudioSessionConfiguration { audioSession in
+            try audioSession.setCategory(.record, mode: .default, options: [])
+            try audioSession.setActive(true, options: [])
+        } onStopRecording: { audioSession in
+            try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+        }
+        
+        /**
+         A configuration that allows both play and record and is **NOT** deactivated when a recording session stops. You should manually deactivate your session.
+         
+         This configuration is non-mixable, meaning it will interrupt any ongoing audio session when it is activated.
+         */
+        public static let playAndRecord = AudioSessionConfiguration { audioSession in
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            try audioSession.setActive(true, options: [])
+        } onStopRecording: { _ in }
+        
+        /**
+         A configuration that does nothing. Use this configuration when you want to configure, activate, and deactivate your app's audio session manually.
+         */
+        public static let none = AudioSessionConfiguration { _ in } onStopRecording: { _ in }
+        
     }
 }

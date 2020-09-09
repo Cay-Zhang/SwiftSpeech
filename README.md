@@ -165,7 +165,7 @@ The third group might be useful if you prefer a reactive programming style. The 
 
 ## SwiftSpeech.Session
 ### Configuration
-A session can be configured using a `SwiftSpeech.Session.Configuration` struct. A configuration contains information such as the locale, the task hint, custom phrases to recognize, and options for on-device recognition. Inspect `SwiftSpeech.Session.Configuration` for more details.
+A session can be configured using a `SwiftSpeech.Session.Configuration` struct. A configuration contains information such as the locale, the task hint, custom phrases to recognize, options for on-device recognition, and audio session configurations. Inspect `SwiftSpeech.Session.Configuration` for more details.
 ### Customized Subscription to Recognition Results
 If the built-in `onRecognize(Latest)` modifiers do not satisfy your needs, you can subscribe to recognition results via `onStart/Stop/CancelRecording`.
 

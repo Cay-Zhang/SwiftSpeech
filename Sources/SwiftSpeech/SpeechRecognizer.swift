@@ -50,9 +50,7 @@ public class SpeechRecognizer {
             
             // Configure the audio session for the app if it's on iOS/Mac Catalyst.
             #if canImport(UIKit)
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            try sessionConfiguration.audioSessionConfiguration.onStartRecording(AVAudioSession.sharedInstance())
             #endif
             
             let inputNode = audioEngine.inputNode
@@ -115,6 +113,14 @@ public class SpeechRecognizer {
         
         self.audioEngine.stop()
         self.audioEngine.inputNode.removeTap(onBus: 0)
+        
+        do {
+            try sessionConfiguration.audioSessionConfiguration.onStopRecording(AVAudioSession.sharedInstance())
+        } catch {
+            resultSubject.send(completion: .failure(error))
+            SpeechRecognizer.remove(id: self.id)
+        }
+        
     }
     
     /// Call this method to immediately stop recording AND the recognition task (i.e. stop recognizing & receiving results).
