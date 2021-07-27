@@ -39,9 +39,15 @@ Aside from the readme, the best way to learn more about SwiftSpeech and how spee
 - [x] Fully open low-level APIs.
 
 ## Installation
-SwiftSpeech is available through Swift Package Manager. To use it, add a package dependency using URL:
+### Swift Package Manager (Recommended)
+In Xcode, select `Add Packages...` from the `File` menu and enter the following package URL:
 ```html
-https://github.com/Cay-Zhang/SwiftSpeech.git
+https://github.com/Cay-Zhang/SwiftSpeech
+```
+
+### CocoaPods
+```ruby
+pod 'SwiftSpeech'
 ```
 
 ## Getting Started
